@@ -66,7 +66,8 @@ class ModelSelector:
             try:
                 model.load_state_dict(torch.load(configs._MODEL_DIR + configs.MODEL_NAME, map_location=configs._DEVICE))
                 configs._LOAD_SUCCESS = True
-
+                if configs._LOCAL_RANK == 0:
+                    print(f"{configs.MODEL_NAME} loaded!")
             except FileNotFoundError:
                 if configs._LOCAL_RANK == 0:
                     print(f"[\"{configs.MODEL_NAME}\"] Model not found! Fall back to untrained model.\n")

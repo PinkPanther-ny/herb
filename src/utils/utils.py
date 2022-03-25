@@ -74,7 +74,7 @@ def find_best_n_model(local_rank, n=5, rand=False):
         
     model_name = str(best_acc[randrange(n) if (rand and len(acc[:n]) == n) else 0]).replace('.', '_') + ".pth"
     if local_rank == 0:
-        print(f"Loading one of the top {n} best model: {model_name}\n")
+        print(f"Loading one of the top {n} best model: {model_name}")
     return "/" + model_name
 
 
