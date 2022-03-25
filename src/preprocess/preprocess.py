@@ -15,17 +15,20 @@ from torchvision.transforms import AutoAugmentPolicy
 class Preprocessor:
     
     transform_train = transforms.Compose([
-        transforms.Resize(256),
-        transforms.RandomCrop(224),
+        transforms.Resize(550),
+        transforms.CenterCrop((550, 350)),
         transforms.RandomHorizontalFlip(),
-        transforms.AutoAugment(policy=AutoAugmentPolicy.SVHN),
+        transforms.RandomRotation([-45, 45]),
+        # transforms.AutoAugment(policy=AutoAugmentPolicy.SVHN),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
+        # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
     ])
 
     def __init__(self,
@@ -50,10 +53,10 @@ class Preprocessor:
         if configs.DDP_ON:
             train_sampler = DistributedSampler(train_set)
             train_loader = DataLoader(train_set, batch_size=batch_size,
-                                      sampler=train_sampler, num_workers=n_workers, pin_memory=True, drop_last=True)
+                                      sampler=train_sampler, num_workers=n_workers, pin_memory=False, drop_last=True)
         else:
             train_loader = DataLoader(train_set, batch_size=batch_size,
-                                      shuffle=True, num_workers=n_workers, pin_memory=True, drop_last=True)
+                                      shuffle=True, num_workers=n_workers, pin_memory=False, drop_last=True)
     
         # Test with whole test set, no need for distributed sampler
         test_loader = DataLoader(test_set, batch_size=batch_size,
@@ -76,12 +79,12 @@ class Preprocessor:
                 index = random.randint(0, len(loader.dataset) - 1)
             else:
                 index = i
-            print(index)
             # Add subplot to corresponding position
             fig.add_subplot(wid, wid, i + 1)
             plt.imshow((np.transpose(loader.dataset[index][0].numpy(), (1, 2, 0))))
             plt.axis('off')
             if show_classes:
+                print(index)
                 plt.title(configs._CLASSES[loader.dataset[index][1]])
 
         fig.show()
