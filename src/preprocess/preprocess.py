@@ -50,10 +50,10 @@ class Preprocessor:
         if configs.DDP_ON:
             train_sampler = DistributedSampler(train_set)
             train_loader = DataLoader(train_set, batch_size=batch_size,
-                                      sampler=train_sampler)
+                                      sampler=train_sampler, num_workers=n_workers, pin_memory=True, drop_last=True)
         else:
             train_loader = DataLoader(train_set, batch_size=batch_size,
-                                      shuffle=True, num_workers=n_workers)
+                                      shuffle=True, num_workers=n_workers, pin_memory=True, drop_last=True)
     
         # Test with whole test set, no need for distributed sampler
         test_loader = DataLoader(test_set, batch_size=batch_size,

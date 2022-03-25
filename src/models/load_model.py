@@ -51,19 +51,11 @@ class ModelSelector:
         self.net_name = getattr(cfg, "MODEL")
         self.LOCAL_RANK = getattr(cfg, "_LOCAL_RANK")
         pass
-    
-    def ini_model(self):
-        net_info = self.basic_net[self.net_name]
-        net = net_info[0](*net_info[1])
-        if self.LOCAL_RANK == 0:
-            print(f"Model [ {self.net_name} ] loaded!")
-        
-        return net
 
     def get_model(self):
         
         net_info = self.basic_net[self.net_name]
-        model = net_info[0](*net_info[1])
+        model = net_info[0](*net_info[1], num_classes=configs._NUM_CLASSES)
         if self.LOCAL_RANK == 0:
             print(f"Model [ {self.net_name} ] loaded!")
         # Load model to gpu

@@ -8,15 +8,15 @@ class Config:
     def __init__(self, *dict_config) -> None:
         # ==============================================
         # GLOBAL SETTINGS
-        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [2,3,4, 5, 6, 7]))
+        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [0, 1, 2, 3, 4, 5, 6, 7]))
         
         self.DDP_ON: bool = True
         self.MIX_PRECISION: bool = True
 
-        self.BATCH_SIZE: int = 512
+        self.BATCH_SIZE: int = 256
         
-        self.LEARNING_RATE: float = 5e-2
-        self.LEARNING_RATE_DECREASE_EPOCHS = [15,40,80,150]
+        self.LEARNING_RATE: float = 8e-3
+        self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
         self.LEARNING_RATE_GAMMA = 0.35
         
         self.TOTAL_EPOCHS: int = 5000
@@ -39,7 +39,7 @@ class Config:
         self.LOSS = "CrossEntropy"
         
         self.EPOCHS_PER_EVAL: int = 1
-        self.NUM_WORKERS: int = 4
+        self.NUM_WORKERS: int = os.cpu_count()
         self.MODEL_DIR_NAME: str = "/models_v100/"
         
         # ==============================================
@@ -50,6 +50,7 @@ class Config:
         self._SUBMISSION_DATA_DIR:str = self._WORKING_DIR + "/test_images/"
         self._CLASSES: tuple = ('plane', 'car', 'bird', 'cat', 'deer',
                                'dog', 'frog', 'horse', 'ship', 'truck')
+        self._NUM_CLASSES: int = 15505
 
         self._DEVICE = None
         self._LOCAL_RANK = None
