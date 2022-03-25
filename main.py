@@ -53,7 +53,6 @@ def train():
         
         # Just for removing bad models
         remove_bad_models()
-        
         if configs.DDP_ON:
             # To avoid duplicated data sent to multi-gpu
             trainloader.sampler.set_epoch(epoch)
@@ -62,6 +61,7 @@ def train():
         count_log = 0 if configs.N_LOGS_PER_EPOCH == 0 else int(len(trainloader) / configs.N_LOGS_PER_EPOCH)
         
         for i, data in enumerate(trainloader, 0):
+            t = timer.timeit()
             inputs, labels = data
             
             # zero the parameter gradients
@@ -84,7 +84,7 @@ def train():
                 optimizer.step()
 
             if (configs.LOG_EVERY_TIME and configs._LOCAL_RANK == 0) or (count_log != 0 and configs._LOCAL_RANK == 0 and i % count_log == count_log - 1):
-                print(f'[{epoch + 1}(Epochs), {i + 1:5d}/{len(trainloader)}(batches)]')
+                print(f'[{epoch + 1}(Epochs), {i + 1:5d}/{len(trainloader)}(batches)], Already: {t[1]}\n')
 
         # Count epochs for learning rate scheduler
         scheduler.step()

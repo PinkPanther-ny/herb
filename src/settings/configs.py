@@ -13,11 +13,11 @@ class Config:
         self.DDP_ON: bool = True
         self.MIX_PRECISION: bool = True
 
-        self.BATCH_SIZE: int = 256
+        self.BATCH_SIZE: int = 128
         
-        self.LEARNING_RATE: float = 8e-3
+        self.LEARNING_RATE: float = 1e-2
         self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
-        self.LEARNING_RATE_GAMMA = 0.35
+        self.LEARNING_RATE_GAMMA = 0.4
         
         self.TOTAL_EPOCHS: int = 5000
 
@@ -39,7 +39,7 @@ class Config:
         self.LOSS = "CrossEntropy"
         
         self.EPOCHS_PER_EVAL: int = 1
-        self.NUM_WORKERS: int = os.cpu_count()
+        self.NUM_WORKERS: int = 12
         self.MODEL_DIR_NAME: str = "/models_v100/"
         
         # ==============================================
@@ -55,12 +55,17 @@ class Config:
         self._DEVICE = None
         self._LOCAL_RANK = None
         self._LOAD_SUCCESS: bool = False
-        
-        if self.DDP_ON:
-            self._LOCAL_RANK = int(os.environ["LOCAL_RANK"])
-        else:
+        try:
+            if self.DDP_ON:
+                self._LOCAL_RANK = int(os.environ["LOCAL_RANK"])
+            else:
+                self._LOCAL_RANK = 0
+        except KeyError:
             self._LOCAL_RANK = 0
-        
+            self.DDP_ON = False
+            print("Failed to use DDP!")
+            
+            
         self._DEVICE = torch.device("cuda", self._LOCAL_RANK)
         
         if len(dict_config) != 0:
