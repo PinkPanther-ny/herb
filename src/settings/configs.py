@@ -13,7 +13,7 @@ class Config:
         self.DDP_ON: bool = True
         self.MIX_PRECISION: bool = True
 
-        self.BATCH_SIZE: int = 128
+        self.BATCH_SIZE: int = 170
         
         self.LEARNING_RATE: float = 1e-2
         self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
