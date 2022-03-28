@@ -15,18 +15,20 @@ from torchvision.transforms import AutoAugmentPolicy
 class Preprocessor:
     
     transform_train = transforms.Compose([
-        transforms.Resize(550),
-        transforms.CenterCrop((550, 350)),
+        transforms.Resize(240),
+        transforms.CenterCrop((224, 224)),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation([-45, 45]),
+        # transforms.RandomRotation([-45, 45]),
         # transforms.AutoAugment(policy=AutoAugmentPolicy.SVHN),
         transforms.ToTensor(),
-        transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
+        transforms.Normalize([0.8391, 0.8141, 0.7589], [0.1644, 0.1835, 0.2162])
     ])
-
+    
     transform_test = transforms.Compose([
+        transforms.Resize(240),
+        transforms.CenterCrop((224, 224)),
         transforms.ToTensor(),
-        transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
+        transforms.Normalize([0.8391, 0.8141, 0.7589], [0.1644, 0.1835, 0.2162])
     ])
 
     def __init__(self,

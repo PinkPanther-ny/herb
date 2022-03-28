@@ -29,13 +29,13 @@ def batch_mean_and_sd(loader):
 
 # Transform for input images
 transform = transforms.Compose([
-    transforms.Resize(224),
+    transforms.Resize(240),
     transforms.CenterCrop((224, 224)),
     transforms.ToTensor(),
     ])
 
 
-trainloader, testloader = Preprocessor(trans_train=transform, trans_test=transform).get_loader()
+trainloader, testloader = Preprocessor(trans_train=None).get_loader()
 
 mean, std = batch_mean_and_sd(trainloader)
 print("mean and std: \n", mean, std)
