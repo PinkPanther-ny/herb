@@ -8,29 +8,19 @@ from src.models import ModelSelector
 from src.settings import configs
 from src.preprocess import Preprocessor
 
-
-# Transform for input images
-transform = transforms.Compose([
-    transforms.Resize(550),
-    transforms.CenterCrop((550, 350)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
-    ])
-
 # Generate submission
 header = ['Id', 'Predicted']
 batch_size = 128
 
 # Initialize model
 model = ModelSelector(configs).get_model()
-testloader = Preprocessor(trans_test=transform).get_test_loader()
-dataset = ImageFolder(root=configs._SUBMISSION_DATA_DIR, transform=transform)
+testloader = Preprocessor().get_test_loader()
 print("\n==================== Dataset loaded successfully ====================\n")
 print(testloader.dataset)
 print("\n==================== =========================== ====================\n")
 
 # Get all filenames
-all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in dataset.imgs]
+all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in testloader.dataset.imgs]
 all_labels = []
 
 if configs._LOAD_SUCCESS:
@@ -38,7 +28,7 @@ if configs._LOAD_SUCCESS:
     # No need to calculate gradients
     with torch.no_grad():
         i=0
-        for data in tqdm(iterable=testloader, desc='Evaluating test set'):
+        for data in tqdm(iterable=testloader, desc='Evaluating submission test set'):
             i += 1
             images, labels = data
             # calculate outputs by running images through the network
@@ -52,7 +42,7 @@ else:
 if len(all_ids) == len(all_labels):
     print(f"Total {len(all_labels)} answers\n")
     
-    with open('submit_55_59875.csv', 'w', encoding='UTF8') as f:
+    with open('submit50.csv', 'w', encoding='UTF8') as f:
         writer = csv.writer(f)
 
         # write the header
