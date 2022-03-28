@@ -57,7 +57,7 @@ class ModelSelector:
         net_info = self.basic_net[self.net_name]
         model = net_info[0](*net_info[1], num_classes=configs._NUM_CLASSES)
         if self.LOCAL_RANK == 0:
-            print(f"Model [ {self.net_name} ] loaded!")
+            print(f"Model prototype [ {self.net_name} ] loaded!")
         # Load model to gpu
         # Check if load specific model or load best model in model folder
         if configs.LOAD_MODEL:
@@ -67,7 +67,7 @@ class ModelSelector:
                 model.load_state_dict(torch.load(configs._MODEL_DIR + configs.MODEL_NAME, map_location=configs._DEVICE))
                 configs._LOAD_SUCCESS = True
                 if configs._LOCAL_RANK == 0:
-                    print(f"{configs.MODEL_NAME} loaded!")
+                    print(f"Model {configs.MODEL_NAME.replace('/', '')} loaded!")
             except FileNotFoundError:
                 if configs._LOCAL_RANK == 0:
                     print(f"[\"{configs.MODEL_NAME}\"] Model not found! Fall back to untrained model.\n")
