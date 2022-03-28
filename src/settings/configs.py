@@ -49,9 +49,9 @@ class Config:
         self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
         self._DATA_DIR: str = self._WORKING_DIR + '/data/'
         self._SUBMISSION_DATA_DIR:str = self._WORKING_DIR + "/test_images/"
-        self._CLASSES: tuple = ('plane', 'car', 'bird', 'cat', 'deer',
-                               'dog', 'frog', 'horse', 'ship', 'truck')
+        
         self._NUM_CLASSES: int = 15505
+        self._CLASSES = range(self._NUM_CLASSES)
 
         self._DEVICE = None
         self._LOCAL_RANK = None
