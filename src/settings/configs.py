@@ -8,18 +8,18 @@ class Config:
     def __init__(self, *dict_config) -> None:
         # ==============================================
         # GLOBAL SETTINGS
-        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [2, 3, 4, 5, 6, 7]))
+        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [0, 1, 2, 3, 4, 5, 6, 7]))
         
         self.DDP_ON: bool = True
         self.MIX_PRECISION: bool = True
 
-        self.BATCH_SIZE: int = 170
+        self.BATCH_SIZE: int = 512
         
         self.LEARNING_RATE: float = 1e-2
         self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
         self.LEARNING_RATE_GAMMA = 0.4
         
-        self.TOTAL_EPOCHS: int = 5000
+        self.TOTAL_EPOCHS: int = 300
 
         self.LOAD_MODEL: bool = True
         self.MODEL_NAME: str = "53_05.pth"
