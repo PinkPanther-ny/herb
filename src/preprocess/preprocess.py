@@ -32,10 +32,12 @@ class Preprocessor:
     ])
 
     def __init__(self,
-                 trans_train=transform_train,
-                 trans_test=transform_test) -> None:
-        self.trans_train = trans_train
-        self.trans_test = trans_test
+                 trans_train=None,
+                 trans_test=None) -> None:
+        
+        self.trans_train = self.transform_train if trans_train is None else trans_train
+        self.trans_test = self.transform_test if trans_test is None else trans_test
+        
         self.loader = None
 
     def get_loader(self)->Tuple[DataLoader, DataLoader]:
