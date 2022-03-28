@@ -1,20 +1,13 @@
-import math
-import random
-from matplotlib import pyplot as plt
 import torch
-from src.models import ModelSelector
-from src.settings import configs
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
-from torch.utils.data import DataLoader
-import torch.distributed as dist
+from tqdm import tqdm
+import csv
+
+from src.models import ModelSelector
+from src.settings import configs
 from src.preprocess import Preprocessor
 
-import csv
-import random
-from tqdm import tqdm, trange
-import time
-import os
 
 # Transform for input images
 transform = transforms.Compose([
@@ -36,8 +29,6 @@ print("\n==================== Dataset loaded successfully ====================\n
 print(testloader.dataset)
 print("\n==================== =========================== ====================\n")
 
-testloader_tqdm = tqdm(iterable=testloader, desc='Evaluating test set',)
-
 # Get all filenames
 all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in dataset.imgs]
 all_labels = []
@@ -47,7 +38,7 @@ if configs._LOAD_SUCCESS:
     # No need to calculate gradients
     with torch.no_grad():
         i=0
-        for data in testloader_tqdm:
+        for data in tqdm(iterable=testloader, desc='Evaluating test set'):
             i += 1
             images, labels = data
             # calculate outputs by running images through the network
@@ -58,9 +49,8 @@ if configs._LOAD_SUCCESS:
 else:
     print("Fatal! Load model failed!")
     
-print(len(all_ids), len(all_labels))
 if len(all_ids) == len(all_labels):
-    print(f"Total {len(all_ids)} answers\n")
+    print(f"Total {len(all_labels)} answers\n")
     
     with open('submit_55_59875.csv', 'w', encoding='UTF8') as f:
         writer = csv.writer(f)
@@ -68,7 +58,7 @@ if len(all_ids) == len(all_labels):
         # write the header
         writer.writerow(header)
         
-        for i in trange(len(all_ids)):
+        for i in tqdm(range(len(all_labels)), "Writing answers"):
             # write the data
             writer.writerow([all_ids[i], all_labels[i]])
 else:
