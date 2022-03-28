@@ -1,5 +1,7 @@
 import torch
 from src.preprocess import Preprocessor
+import torchvision.transforms as transforms
+from tqdm import tqdm
 
 
 def batch_mean_and_sd(loader):
@@ -7,8 +9,8 @@ def batch_mean_and_sd(loader):
     cnt = 0
     fst_moment = torch.empty(3)
     snd_moment = torch.empty(3)
-    count_i = 0
-    for images, _ in loader:
+    pbar = tqdm(loader, desc="Calculating mean and sd")
+    for images, _ in pbar:
         b, c, h, w = images.shape
         nb_pixels = b * h * w
         sum_ = torch.sum(images, dim=[0, 2, 3])
@@ -18,15 +20,22 @@ def batch_mean_and_sd(loader):
         snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
         cnt += nb_pixels
         
-        count_i += 1
-        if count_i%20==0:
-            print(fst_moment, torch.sqrt(snd_moment - fst_moment ** 2))
+        cur_mean = [round(i, 4) for i in fst_moment.tolist()]
+        cur_sd = [round(i, 4) for i in torch.sqrt(snd_moment - fst_moment ** 2).tolist()]
+        pbar.set_postfix({'mean': cur_mean, 'sd': cur_sd})
 
     mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)        
     return mean,std
 
+# Transform for input images
+transform = transforms.Compose([
+    transforms.Resize(224),
+    transforms.CenterCrop((224, 224)),
+    transforms.ToTensor(),
+    ])
 
-trainloader, testloader = Preprocessor().get_loader()
+
+trainloader, testloader = Preprocessor(trans_train=transform, trans_test=transform).get_loader()
 
 mean, std = batch_mean_and_sd(trainloader)
 print("mean and std: \n", mean, std)
