@@ -27,7 +27,7 @@ def train():
     model = ModelSelector(configs).get_model()
     criterion = LossSelector(loss_name=configs.LOSS, cfg=configs).get_loss()
     optimizer = OptSelector(model.parameters(), opt_name=configs.OPT, cfg=configs).get_optim()
-    scheduler = MultiStepLR(optimizer, milestones=[15,40,80,150], gamma=0.35)
+    scheduler = MultiStepLR(optimizer, milestones=configs.LEARNING_RATE_DECREASE_EPOCHS, gamma=configs.LEARNING_RATE_GAMMA)
     
     trainloader, testloader = Preprocessor().get_loader()
     
@@ -106,7 +106,6 @@ if __name__ == '__main__':
     try:
         gc.collect()
         torch.cuda.empty_cache()
-        configs.reset_working_dir(__file__)
         train()
     except KeyboardInterrupt:
         print("Exit!")

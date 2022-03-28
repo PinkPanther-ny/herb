@@ -22,8 +22,8 @@ class Config:
         self.TOTAL_EPOCHS: int = 5000
 
         self.LOAD_MODEL: bool = True
-        self.MODEL_NAME: str = "0_01.pth"
-        self.LOAD_BEST: bool = True
+        self.MODEL_NAME: str = "53_05.pth"
+        self.LOAD_BEST: bool = False
         self.LOG_EVERY_TIME:bool = False
         self.LOG_EVAL:bool = True
         self.N_LOGS_PER_EPOCH: int = 100
@@ -44,7 +44,8 @@ class Config:
         
         # ==============================================
         # Private
-        self._WORKING_DIR: str = os.path.dirname(os.path.realpath(__file__))
+        cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+        self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
         self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
         self._DATA_DIR: str = self._WORKING_DIR + '/data/'
         self._SUBMISSION_DATA_DIR:str = self._WORKING_DIR + "/test_images/"
@@ -72,15 +73,6 @@ class Config:
             d = eval(dict_config[0])
             for k in dict(d):
                 setattr(self, k, d[k])
-
-    def reset_working_dir(self, main_dir):
-        self._WORKING_DIR: str = os.path.dirname(os.path.realpath(main_dir))
-        self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
-        self._DATA_DIR: str = self._WORKING_DIR + '/data/'
-        self._SUBMISSION_DATA_DIR:str = self._WORKING_DIR + "/test_images/"
-                
-        if not os.path.exists(self._MODEL_DIR):
-            os.makedirs(self._MODEL_DIR)
 
     def save(self, fn='/config.json'):
         with open(self._WORKING_DIR + fn, 'w') as fp:
