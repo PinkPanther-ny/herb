@@ -1,5 +1,7 @@
+import math
 import random
 import time
+from matplotlib import pyplot as plt
 import numpy as np
 import torch
 from ..settings import configs
@@ -138,3 +140,27 @@ def eval_submission(model, testloader):
             #     print(f"Eval: {i}/{len(testloader)}")
     print(dict1)
     model.train()
+
+def visualize_loader(loader, n=9, train=True, rand=False, classes=None, show_classes=False, size_mul=1.0)->None:
+    if classes is not None:
+        configs._CLASSES = classes
+        
+    wid = int(math.floor(math.sqrt(n)))
+    if wid * wid < n:
+        wid += 1
+    fig = plt.figure(figsize=(2 * wid * size_mul, 2 * wid * size_mul))
+
+    for i in range(n):
+        if rand:
+            index = random.randint(0, len(loader.dataset) - 1)
+        else:
+            index = i
+        # Add subplot to corresponding position
+        fig.add_subplot(wid, wid, i + 1)
+        plt.imshow((np.transpose(loader.dataset[index][0].numpy(), (1, 2, 0))))
+        plt.axis('off')
+        if show_classes:
+            print(index)
+            plt.title(configs._CLASSES[loader.dataset[index][1]])
+
+    fig.show()
