@@ -10,6 +10,7 @@ import datetime
 import torch
 from torch.optim.lr_scheduler import MultiStepLR
 import gc
+from tqdm import tqdm
 
 # OMP_NUM_THREADS=2 python -m torch.distributed.run --nproc_per_node 4 main.py
 
@@ -39,7 +40,7 @@ def train():
         print(f"\n================== ================================= ==================\n")
         if configs._LOAD_SUCCESS:
             print(f"Verifying loaded model ({configs.MODEL_NAME.replace('/','')})'s accuracy as its name suggested...")
-            # eval_total(model, testloader, timer)
+            eval_total(model, testloader, timer)
         print(f"\n================== Start training! Total {configs.TOTAL_EPOCHS} epochs ==================\n")
     
     # Mixed precision for massive speed up
@@ -50,18 +51,22 @@ def train():
     
     # ========================== Train =============================
     for epoch in range(configs.TOTAL_EPOCHS):
-        
+        t = timer.timeit()
         # Just for removing bad models
         remove_bad_models()
         if configs.DDP_ON:
             # To avoid duplicated data sent to multi-gpu
             trainloader.sampler.set_epoch(epoch)
         
-        # Counter for printing information during training
-        count_log = 0 if configs.N_LOGS_PER_EPOCH == 0 else int(len(trainloader) / configs.N_LOGS_PER_EPOCH)
+        if configs._LOCAL_RANK == 0:
+            pbar = tqdm(trainloader)
+        else: 
+            pbar = trainloader
         
-        for i, data in enumerate(trainloader, 0):
-            t = timer.timeit()
+        for i, data in enumerate(pbar, 0):
+            if configs._LOCAL_RANK == 0:
+                pbar.set_description(f'Epoch {epoch} batch {i}')
+
             inputs, labels = data
             
             # zero the parameter gradients
@@ -83,9 +88,6 @@ def train():
                 loss.backward()
                 optimizer.step()
 
-            if (configs.LOG_EVERY_TIME and configs._LOCAL_RANK == 0) or (count_log != 0 and configs._LOCAL_RANK == 0 and i % count_log == count_log - 1):
-                print(f'[{epoch + 1}(Epochs), {i + 1:5d}/{len(trainloader)}(batches)], Already: {t[1]}\n')
-
         # Count epochs for learning rate scheduler
         scheduler.step()
         
@@ -95,9 +97,9 @@ def train():
                 print(f"Learning rate updated from {scheduler.get_last_lr()} to {scheduler.get_lr()}")
             # Time current epoch training duration
             t = timer.timeit()
+            print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
                 eval_total(model, testloader, timer, epoch)
-            print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
 
     print(f'Training Finished! ({str(datetime.timedelta(seconds=int(timer.timeit())))})')
 
