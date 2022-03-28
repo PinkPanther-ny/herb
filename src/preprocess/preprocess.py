@@ -22,12 +22,10 @@ class Preprocessor:
         # transforms.AutoAugment(policy=AutoAugmentPolicy.SVHN),
         transforms.ToTensor(),
         transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
-        # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         transforms.Normalize([0.8246, 0.7948, 0.7320], [0.1818, 0.2051, 0.2423])
     ])
 
@@ -39,6 +37,7 @@ class Preprocessor:
         self.trans_test = self.transform_test if trans_test is None else trans_test
         
         self.loader = None
+        self.test_loader = None
 
     def get_loader(self)->Tuple[DataLoader, DataLoader]:
 
@@ -48,10 +47,11 @@ class Preprocessor:
         data_dir = configs._DATA_DIR
         batch_size = configs.BATCH_SIZE
         n_workers = configs.NUM_WORKERS
-        data_dir = "/datav/alvin/herb/data"
+        
         # ImageFolder
-        dataset = ImageFolder(root=data_dir, transform=self.transform_train)
+        dataset = ImageFolder(root=data_dir, transform=self.trans_train)
         train_set, test_set = random_split(dataset, [len(dataset)-80000, 80000], generator=torch.Generator().manual_seed(1))
+        
         if configs.DDP_ON:
             train_sampler = DistributedSampler(train_set)
             train_loader = DataLoader(train_set, batch_size=batch_size,
@@ -66,6 +66,22 @@ class Preprocessor:
 
         # Return two iterables which contain data in blocks, block size equals to batch size
         return train_loader, test_loader
+    
+    def get_test_loader(self)->DataLoader:
+        if self.test_loader is not None:
+            return self.test_loader
+        
+        batch_size = configs.BATCH_SIZE
+        n_workers = configs.NUM_WORKERS
+        dataset = ImageFolder(root=configs._SUBMISSION_DATA_DIR, transform=self.trans_test)
+        test_loader = DataLoader(
+            dataset=dataset,
+            batch_size=batch_size, shuffle=False, num_workers=n_workers
+            )
+        
+        self.test_loader = test_loader
+        return self.test_loader
+        
 
     def visualize_data(self, n=9, train=True, rand=True, classes=None, show_classes=False, size_mul=1.0)->None:
         if classes is not None:
