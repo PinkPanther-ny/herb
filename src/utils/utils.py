@@ -4,6 +4,7 @@ import time
 from matplotlib import pyplot as plt
 import numpy as np
 import torch
+from tqdm import tqdm
 from ..settings import configs
 from random import randrange
 import os
@@ -37,7 +38,8 @@ def eval_total(model, testloader, timer, epoch=-1):
     # gradients for our outputs
     with torch.no_grad():
         i=0
-        for data in testloader:
+        pbar = tqdm(testloader, desc="Evaluating model")
+        for data in pbar:
             images, labels = data
             # calculate outputs by running images through the network
             outputs = model(images.to(configs._DEVICE))
@@ -46,12 +48,9 @@ def eval_total(model, testloader, timer, epoch=-1):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
             i+=1
-            if configs.LOG_EVAL:
-                print(f"Eval: {i}/{len(testloader)}, {correct / float(total)}, {correct}/{total}")
+            pbar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
             
     print(f"{'''''' if epoch==-1 else '''Epoch ''' + str(epoch) + ''': '''}Accuracy of the network on the {total} test images: {100 * correct / float(total)} %")
-    t = timer.timeit()
-    print(f"Evaluate delta time: {t[0]}, Already: {t[1]}")
     model.train()
     
     if configs.DDP_ON:
