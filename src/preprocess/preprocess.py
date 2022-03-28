@@ -52,7 +52,10 @@ class Preprocessor:
         
         # ImageFolder
         dataset = ImageFolder(root=data_dir, transform=self.trans_train)
-        train_set, test_set = random_split(dataset, [len(dataset)-80000, 80000], generator=torch.Generator().manual_seed(1))
+        train_set, test_set = random_split(dataset, 
+                                           [len(dataset)-configs._TEST_N_DATA_POINTS, configs._TEST_N_DATA_POINTS], 
+                                           generator=torch.Generator().manual_seed(1)
+                                           )
         
         if configs.DDP_ON:
             train_sampler = DistributedSampler(train_set)

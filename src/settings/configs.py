@@ -8,7 +8,7 @@ class Config:
     def __init__(self, *dict_config) -> None:
         # ==============================================
         # GLOBAL SETTINGS
-        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [0, 1, 2, 3, 4, 5, 6, 7]))
+        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [2, 3, 4, 5, 6, 7]))
         
         self.DDP_ON: bool = True
         self.MIX_PRECISION: bool = True
@@ -23,10 +23,7 @@ class Config:
 
         self.LOAD_MODEL: bool = True
         self.MODEL_NAME: str = "53_05.pth"
-        self.LOAD_BEST: bool = False
-        self.LOG_EVERY_TIME:bool = False
-        self.LOG_EVAL:bool = True
-        self.N_LOGS_PER_EPOCH: int = 100
+        self.LOAD_BEST: bool = True
 
         self.GEN_SUBMISSION:bool = True
 
@@ -44,6 +41,7 @@ class Config:
         
         # ==============================================
         # Private
+        self._TEST_N_DATA_POINTS = 60000
         cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
         self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
