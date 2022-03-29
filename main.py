@@ -113,6 +113,11 @@ if __name__ == '__main__':
     try:
         gc.collect()
         torch.cuda.empty_cache()
+        options = getOptions()
+        if options.config is not None:
+            configs.load(configs._WORKING_DIR + options.config)
+        if options.savecopy:
+            configs.save(configs._WORKING_DIR + "/default.json")
         train()
     except KeyboardInterrupt:
         print("Exit!")

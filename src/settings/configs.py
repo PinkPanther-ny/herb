@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 
 import torch
 
@@ -19,15 +20,15 @@ class Config:
         # WHICH COULD EFFECT MODEL PERFORMANCE
         
         # Select in optim/load_opt and loss/load_loss
-        self.MODEL = "resnet50"
-        self.OPT = "Adam"
-        self.LOSS = "CrossEntropy"
+        self.MODEL: str = "resnet50"
+        self.OPT: str = "Adam"
+        self.LOSS: str = "CrossEntropy"
 
         self.BATCH_SIZE: int = 512
         
-        self.LEARNING_RATE: float = 2e-2
-        self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
-        self.LEARNING_RATE_GAMMA = 0.4
+        self.LEARNING_RATE: float = 1e-2
+        self.LEARNING_RATE_DECREASE_EPOCHS: list = [5,10,15,20]
+        self.LEARNING_RATE_GAMMA: float = 0.4
         
         # TRAINING SPEED RELATED SETTINGS AND CUSTOM CONFIGURATION
         # n workers for loading data
@@ -38,7 +39,7 @@ class Config:
         self.EPOCHS_PER_EVAL: int = 1
         # Train with {len(all data) - TEST_N_DATA_POINTS}
         # Test with {TEST_N_DATA_POINTS}
-        self.TEST_N_DATA_POINTS = 60000
+        self.TEST_N_DATA_POINTS: int = 60000
         
         # ==============================================
         # MODEL LOADING SETTINGS
@@ -89,19 +90,35 @@ class Config:
 
     def save(self, fn='/config.json'):
         with open(self._WORKING_DIR + fn, 'w') as fp:
-            json.dump(str(self.__dict__), fp, indent=4)
+            dict_copy = copy.deepcopy(self.__dict__)
+            
+            # Remove private properties witch should be derived on-the-fly
+            del_key = []
+            for i in dict_copy:
+                if i.startswith('_'):
+                    del_key.append(i)
+            for i in del_key:
+                del dict_copy[i]
+                
+            json.dump(dict_copy, fp, indent=4)
 
     def load(self, fn='/config.json'):
+        
         try:
-
             with open(self._WORKING_DIR + fn, 'r') as fp:
                 dict_config = json.load(fp)
-                d = eval(dict_config)
-                for k in dict(d):
-                    setattr(self, k, d[k])
+                for k in dict(dict_config):
+                    if type(dict_config[k]) != type(getattr(self, k)):
+                        cur_type = type(getattr(self, k))
+                        print("Warning! Config file contains unmatched value type, could be a broken configuration")
+                        print(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) to {cur_type(dict_config[k])} ({cur_type})")
+                        setattr(self, k, cur_type(dict_config[k]))
+                    else:
+                        setattr(self, k, dict_config[k])
             print("Config file loaded successfully!")
+            
         except:
-            print("Config file does not exits, use default value instead!")
+            print("Config file load failed! Use default value instead!")
 
 
 configs = Config()
