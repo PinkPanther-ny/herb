@@ -72,7 +72,7 @@ class Preprocessor:
         # Return two iterables which contain data in blocks, block size equals to batch size
         return train_loader, test_loader
     
-    def get_test_loader(self)->DataLoader:
+    def get_submission_test_loader(self)->DataLoader:
         if self.test_loader is not None:
             return self.test_loader
         

@@ -10,6 +10,7 @@ from random import randrange
 import os
 from os import walk
 
+import csv
 class Timer:
     def __init__(self):
         self.ini = time.time()
@@ -54,9 +55,9 @@ def eval_total(model, testloader, timer, epoch=-1):
     model.train()
     
     if configs.DDP_ON:
-        torch.save(model.module.state_dict(), configs._MODEL_DIR + f"{100 * correct / total}".replace('.', '_') + '.pth')
+        torch.save(model.module.state_dict(), configs._MODEL_DIR + f"{round(100 * correct / float(total), 4)}".replace('.', '_') + '.pth')
     else:
-        torch.save(model.state_dict(), configs._MODEL_DIR + f"{100 * correct / total}".replace('.', '_') + '.pth')
+        torch.save(model.state_dict(), configs._MODEL_DIR + f"{round(100 * correct / float(total), 4)}".replace('.', '_') + '.pth')
 
 
 def find_best_n_model(local_rank, n=5, rand=False):
@@ -109,36 +110,54 @@ def set_random_seeds(seed=0, deterministic = True):
         torch.backends.cudnn.benchmark = False
 
 
-from collections import defaultdict
-def eval_submission(model, testloader):
-    # Only neccessary to evaluate model on one gpu
-    if configs._LOCAL_RANK != 0:
-        return
-    model.eval()
-    dict1 = defaultdict(str)
-    # since we're not training, we don't need to calculate the
-    # gradients for our outputs
-    with torch.no_grad():
-        for i, data in enumerate(testloader, 0):
-            images, labels = data
-            # # calculate outputs by running images through the network
-            # outputs = model(images.to(configs._DEVICE))
-            # # the class with the highest energy is what we choose as prediction
-            # _, predicted = torch.max(outputs.cpu().data, 1)
-            # # if predicted[0]!=11548 and predicted[0]!=3231:
-            # #     print(predicted)
-            print(str(images.shape))
-            # if dict1[str(images.shape)]==0:
-            #     dict1[str(images.shape)] = dict1[str(images.shape)] + 1
-            # else:
-            #     dict1[str(images.shape)] = dict1[str(images.shape)] + 1
-            # if i==100:
-            #     break
-            # if configs.LOG_EVAL:
-            #     print(images.shape)
-            #     print(f"Eval: {i}/{len(testloader)}")
-    print(dict1)
-    model.train()
+def gen_submission(model, testloader):
+    
+    print("\n==================== Start generating submission ====================\n")
+    # Generate submission
+    header = ['Id', 'Predicted']
+
+    # Initialize model
+    # model = ModelSelector(configs).get_model()
+    # testloader = Preprocessor().get_submission_test_loader()
+    print("\n==================== Dataset loaded successfully ====================\n")
+    print(testloader.dataset)
+    print("\n==================== =========================== ====================\n")
+
+    # Get all filenames
+    all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in testloader.dataset.imgs]
+    all_labels = []
+
+    if configs._LOAD_SUCCESS:
+        model.eval()
+        # No need to calculate gradients
+        with torch.no_grad():
+            i=0
+            for data in tqdm(iterable=testloader, desc='Evaluating submission test set'):
+                i += 1
+                images, labels = data
+                # calculate outputs by running images through the network
+                outputs = model(images.to(configs._DEVICE))
+                # the class with the highest energy is what we choose as prediction
+                _, predicted = torch.max(outputs.data, 1)
+                all_labels = all_labels + predicted.tolist()
+    else:
+        print("Fatal! Load model failed!")
+        
+    if len(all_ids) == len(all_labels):
+        print(f"Total {len(all_labels)} answers\n")
+        
+        with open(configs.SUBMISSION_FN, 'w', encoding='UTF8') as f:
+            writer = csv.writer(f)
+
+            # write the header
+            writer.writerow(header)
+            
+            for i in tqdm(range(len(all_labels)), "Writing answers"):
+                # write the data
+                writer.writerow([all_ids[i], all_labels[i]])
+    else:
+        print("Fatal! Length not equal!")
+                
 
 def visualize_loader(loader, n=9, train=True, rand=False, classes=None, show_classes=False, size_mul=1.0)->None:
     if classes is not None:

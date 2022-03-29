@@ -11,11 +11,10 @@ from src.preprocess import Preprocessor
 print("\n==================== Start generating submission ====================\n")
 # Generate submission
 header = ['Id', 'Predicted']
-batch_size = 128
 
 # Initialize model
 model = ModelSelector(configs).get_model()
-testloader = Preprocessor().get_test_loader()
+testloader = Preprocessor().get_submission_test_loader()
 print("\n==================== Dataset loaded successfully ====================\n")
 print(testloader.dataset)
 print("\n==================== =========================== ====================\n")

@@ -3,7 +3,7 @@ from src.optim import OptSelector
 from src.models import ModelSelector
 from src.preprocess import Preprocessor
 from src.settings import configs
-from src.utils import Timer, eval_total, remove_bad_models, set_random_seeds
+from src.utils import *
 
 import torch.distributed as dist
 import datetime
@@ -30,7 +30,8 @@ def train():
     optimizer = OptSelector(model.parameters(), opt_name=configs.OPT, cfg=configs).get_optim()
     scheduler = MultiStepLR(optimizer, milestones=configs.LEARNING_RATE_DECREASE_EPOCHS, gamma=configs.LEARNING_RATE_GAMMA)
     
-    trainloader, testloader = Preprocessor().get_loader()
+    p = Preprocessor()
+    trainloader, testloader = p.get_loader()
     
     # Start timer from here
     timer = Timer()
@@ -41,6 +42,10 @@ def train():
         if configs._LOAD_SUCCESS:
             print(f"Verifying loaded model ({configs.MODEL_NAME.replace('/','')})'s accuracy as its name suggested...")
             eval_total(model, testloader, timer)
+            
+            if configs.GEN_SUBMISSION:
+                print(f"Generating submission file")
+                gen_submission(model, p.get_submission_test_loader())
         print(f"\n================== Start training! Total {configs.TOTAL_EPOCHS} epochs ==================\n")
     
     # Mixed precision for massive speed up
