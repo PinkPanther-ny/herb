@@ -1,5 +1,5 @@
 import torch
-from src.preprocess import Preprocessor
+from ..preprocess import Preprocessor
 import torchvision.transforms as transforms
 from tqdm import tqdm
 
