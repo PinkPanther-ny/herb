@@ -88,8 +88,8 @@ class Config:
             for k in dict(d):
                 setattr(self, k, d[k])
 
-    def save(self, fn='/config.json'):
-        with open(self._WORKING_DIR + fn, 'w') as fp:
+    def save(self, fn='config.json'):
+        with open(self._WORKING_DIR + "/" + fn, 'w') as fp:
             dict_copy = copy.deepcopy(self.__dict__)
             
             # Remove private properties witch should be derived on-the-fly
@@ -102,10 +102,10 @@ class Config:
                 
             json.dump(dict_copy, fp, indent=4)
 
-    def load(self, fn='/config.json'):
+    def load(self, fn='config.json'):
         
         try:
-            with open(self._WORKING_DIR + fn, 'r') as fp:
+            with open(self._WORKING_DIR + "/" + fn, 'r') as fp:
                 dict_config = json.load(fp)
                 for k in dict(dict_config):
                     if type(dict_config[k]) != type(getattr(self, k)):
