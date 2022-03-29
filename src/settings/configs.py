@@ -9,8 +9,6 @@ class Config:
         # ==============================================
         # GLOBAL SETTINGS
         
-        os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [0, 1, 2, 3, 4, 5, 6, 7]))
-        
         # Directory right under the root of the project
         self.MODEL_DIR_NAME: str = "/models_v100_new/"
         self.TRAINING_DATA_DIR: str = "/data/"
