@@ -60,8 +60,8 @@ class ModelSelector:
             print(f"Model prototype [ {self.net_name} ] loaded!")
         # Load model to gpu
         # Check if load specific model or load best model in model folder
-        if configs.LOAD_MODEL:
-            if configs.LOAD_BEST:
+        if configs.LOAD_SPECIFIC_MODEL:
+            if configs.LOAD_BEST_MODEL:
                 configs.MODEL_NAME = find_best_n_model(configs._LOCAL_RANK)
             try:
                 model.load_state_dict(torch.load(configs._MODEL_DIR + configs.MODEL_NAME, map_location=configs._DEVICE))

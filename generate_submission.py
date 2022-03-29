@@ -8,6 +8,7 @@ from src.models import ModelSelector
 from src.settings import configs
 from src.preprocess import Preprocessor
 
+print("\n==================== Start generating submission ====================\n")
 # Generate submission
 header = ['Id', 'Predicted']
 batch_size = 128
@@ -42,7 +43,7 @@ else:
 if len(all_ids) == len(all_labels):
     print(f"Total {len(all_labels)} answers\n")
     
-    with open('submit50.csv', 'w', encoding='UTF8') as f:
+    with open(configs.SUBMISSION_FN, 'w', encoding='UTF8') as f:
         writer = csv.writer(f)
 
         # write the header

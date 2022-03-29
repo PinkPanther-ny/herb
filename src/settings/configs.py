@@ -8,48 +8,65 @@ class Config:
     def __init__(self, *dict_config) -> None:
         # ==============================================
         # GLOBAL SETTINGS
+        
         os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(map(str, [0, 1, 2, 3, 4, 5, 6, 7]))
         
-        self.DDP_ON: bool = True
-        self.MIX_PRECISION: bool = True
-
-        self.BATCH_SIZE: int = 512
-        
-        self.LEARNING_RATE: float = 1e-2
-        self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
-        self.LEARNING_RATE_GAMMA = 0.4
-        
-        self.TOTAL_EPOCHS: int = 300
-
-        self.LOAD_MODEL: bool = True
-        self.MODEL_NAME: str = "53_05.pth"
-        self.LOAD_BEST: bool = True
-
-        self.GEN_SUBMISSION:bool = True
+        # Directory right under the root of the project
+        self.MODEL_DIR_NAME: str = "/models_v100_new/"
+        self.TRAINING_DATA_DIR: str = "/data/"
+        self.SUBMISSION_DATA_DIR: str = "/test_images/"
 
         # ==============================================
-        # SPECIAL SETTINGS
+        # MAIN TRAINING SETTINGS 
+        # WHICH COULD EFFECT MODEL PERFORMANCE
         
         # Select in optim/load_opt and loss/load_loss
         self.MODEL = "resnet50"
         self.OPT = "Adam"
         self.LOSS = "CrossEntropy"
+
+        self.BATCH_SIZE: int = 512
         
-        self.EPOCHS_PER_EVAL: int = 1
+        self.LEARNING_RATE: float = 2e-2
+        self.LEARNING_RATE_DECREASE_EPOCHS = [5,10,15,20]
+        self.LEARNING_RATE_GAMMA = 0.4
+        
+        # TRAINING SPEED RELATED SETTINGS AND CUSTOM CONFIGURATION
+        # n workers for loading data
         self.NUM_WORKERS: int = 12
-        self.MODEL_DIR_NAME: str = "/models_v100/"
+        self.DDP_ON: bool = True
+        self.MIX_PRECISION: bool = True
+        self.TOTAL_EPOCHS: int = 300
+        self.EPOCHS_PER_EVAL: int = 1
+        # Train with {len(all data) - TEST_N_DATA_POINTS}
+        # Test with {TEST_N_DATA_POINTS}
+        self.TEST_N_DATA_POINTS = 60000
         
         # ==============================================
-        # Private
-        self._TEST_N_DATA_POINTS = 60000
-        cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-        self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
-        self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
-        self._DATA_DIR: str = self._WORKING_DIR + '/data/'
-        self._SUBMISSION_DATA_DIR:str = self._WORKING_DIR + "/test_images/"
+        # MODEL LOADING SETTINGS
+        
+        # If load specific failed, 
+        # will fall back to use [empty model prototype | load best model]
+        # LOAD_BEST_MODEL is prioral to LOAD_SPECIFIC_MODEL
+        self.LOAD_SPECIFIC_MODEL: bool = True
+        self.LOAD_BEST_MODEL: bool = True
+        self.MODEL_NAME: str = "53_05.pth"
+        
+        # If true, a submission file will be generated before training
+        self.GEN_SUBMISSION:bool = False
+        self.SUBMISSION_FN:str = 'submit50_new.csv'
+
+        # ==============================================
+        # PRIVATE VALUES
         
         self._NUM_CLASSES: int = 15505
         self._CLASSES = range(self._NUM_CLASSES)
+        
+        cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+        self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
+        self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
+        self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
+        self._SUBMISSION_DATA_DIR:str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
 
         self._DEVICE = None
         self._LOCAL_RANK = None
