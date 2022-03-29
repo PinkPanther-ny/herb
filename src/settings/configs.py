@@ -89,6 +89,8 @@ class Config:
                 setattr(self, k, d[k])
 
     def save(self, fn='config.json'):
+        if self._LOCAL_RANK != 0:
+            return
         with open(self._WORKING_DIR + "/" + fn, 'w') as fp:
             dict_copy = copy.deepcopy(self.__dict__)
             
@@ -101,6 +103,7 @@ class Config:
                 del dict_copy[i]
                 
             json.dump(dict_copy, fp, indent=4)
+        print(f"Config file successfully saved to {fn}!")
 
     def load(self, fn='config.json'):
         
@@ -108,17 +111,24 @@ class Config:
             with open(self._WORKING_DIR + "/" + fn, 'r') as fp:
                 dict_config = json.load(fp)
                 for k in dict(dict_config):
-                    if type(dict_config[k]) != type(getattr(self, k)):
-                        cur_type = type(getattr(self, k))
-                        print("Warning! Config file contains unmatched value type, could be a broken configuration")
-                        print(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) to {cur_type(dict_config[k])} ({cur_type})")
-                        setattr(self, k, cur_type(dict_config[k]))
-                    else:
-                        setattr(self, k, dict_config[k])
-            print("Config file loaded successfully!")
+                    try:
+                        if type(dict_config[k]) != type(getattr(self, k)):
+                            cur_type = type(getattr(self, k))
+                            if self._LOCAL_RANK == 0:
+                                print("Warning! Config file contains unmatched value type, could be a broken configuration")
+                                print(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) to {cur_type(dict_config[k])} ({cur_type})")
+                            setattr(self, k, cur_type(dict_config[k]))
+                        else:
+                            setattr(self, k, dict_config[k])
+                    except AttributeError:
+                        if self._LOCAL_RANK == 0:
+                            print(f"Key [\"{k}\"] will be disgarded since config class does not use this attribute.")
+            if self._LOCAL_RANK == 0:
+                print("Config file loaded successfully!")
             
         except:
-            print("Config file load failed! Use default value instead!")
+            if self._LOCAL_RANK == 0:
+                print("Config file load failed! Use default value instead!")
 
 
 configs = Config()
