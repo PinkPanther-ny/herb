@@ -5,10 +5,6 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="5110" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/configs.py" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
           <option name="caretOffset" value="0" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/src/utils/mean_var.py" />
         </OpenedFileInfo>
@@ -29,20 +25,8 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/run.sh" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="13703" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/../../software/anaconda3/lib/python3.9/site-packages/torch/utils/data/dataloader.py" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="176" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/../../software/anaconda3/lib/python3.9/site-packages/torch/utils/data/sampler.py" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="32459" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/../../software/anaconda3/lib/python3.9/typing.py" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="733" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/generate_submission.py" />
+          <option name="caretOffset" value="5110" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/configs.py" />
         </OpenedFileInfo>
       </list>
     </option>

@@ -113,7 +113,7 @@ class Config:
                 dict_config = json.load(fp)
                 for k in dict(dict_config):
                     try:
-                        if isinstance(dict_config[k], type(getattr(self, k))):
+                        if type(dict_config[k]) == type(getattr(self, k)):
                             cur_type = type(getattr(self, k))
                             if self._LOCAL_RANK == 0:
                                 print("Warning! Config file contains unmatched value type, "
