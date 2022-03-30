@@ -1,6 +1,6 @@
-import os
-import json
 import copy
+import json
+import os
 
 import torch
 
@@ -80,6 +80,8 @@ class Config:
             self.DDP_ON = False
             print("Failed to use DDP!")
 
+        if self._LOCAL_RANK == 0 and not os.path.exists(self._MODEL_DIR):
+            os.makedirs(self._MODEL_DIR)
         self._DEVICE = torch.device("cuda", self._LOCAL_RANK)
 
         if len(dict_config) != 0:
@@ -125,11 +127,11 @@ class Config:
                         if self._LOCAL_RANK == 0:
                             print(f"Key [\"{k}\"] will be discarded since config class does not use this attribute.")
             if self._LOCAL_RANK == 0:
-                print("Config file loaded successfully!")
+                print(f"Config file {fn} loaded successfully!")
 
         except:
             if self._LOCAL_RANK == 0:
-                print("Config file load failed! Use default value instead!")
+                print(f"Config file {fn} failed to load! Use default value instead!")
 
 
 configs = Config()

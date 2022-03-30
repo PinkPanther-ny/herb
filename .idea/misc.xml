@@ -5,15 +5,7 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="0" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/src/preprocess/__init__.py" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="29" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/__init__.py" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="0" />
+          <option name="caretOffset" value="5110" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/configs.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
@@ -41,8 +33,11 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/generate_submission.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="2224" />
+          <option name="caretOffset" value="2370" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/main.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="fileUrl" value="mock:///Diff" />
         </OpenedFileInfo>
       </list>
     </option>
