@@ -5,6 +5,10 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
+          <option name="caretOffset" value="4336" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/configs.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
           <option name="caretOffset" value="0" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/src/utils/mean_var.py" />
         </OpenedFileInfo>
@@ -21,16 +25,12 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/main.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="112" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/run.sh" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
           <option name="caretOffset" value="217" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/config.json" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="4263" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/configs.py" />
+          <option name="caretOffset" value="112" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/run.sh" />
         </OpenedFileInfo>
       </list>
     </option>
