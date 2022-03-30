@@ -1,2 +1,2 @@
-from .utils import *
 from .options import *
+from .utils import *

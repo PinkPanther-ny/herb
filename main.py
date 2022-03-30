@@ -1,4 +1,3 @@
-import datetime
 import gc
 
 import torch.distributed as dist
@@ -30,7 +29,7 @@ def train():
                             gamma=configs.LEARNING_RATE_GAMMA)
 
     p = Preprocessor()
-    trainloader, testloader = p.get_loader()
+    train_loader, test_loader = p.get_loader()
 
     # Start timer from here
     timer = Timer()
@@ -40,7 +39,7 @@ def train():
         print(f"\n================== ================================= ==================\n")
         if configs._LOAD_SUCCESS:
             print(f"Verifying loaded model ({configs.MODEL_NAME.replace('/', '')})'s accuracy as its name suggested...")
-            eval_total(model, testloader, timer)
+            eval_total(model, test_loader, timer)
 
             if configs.GEN_SUBMISSION:
                 print(f"Generating submission file")
@@ -60,16 +59,16 @@ def train():
         remove_bad_models()
         if configs.DDP_ON:
             # To avoid duplicated data sent to multi-gpu
-            trainloader.sampler.set_epoch(epoch)
+            train_loader.sampler.set_epoch(epoch)
 
         if configs._LOCAL_RANK == 0:
-            pbar = tqdm(trainloader)
+            p_bar = tqdm(train_loader)
         else:
-            pbar = trainloader
+            p_bar = train_loader
 
-        for i, data in enumerate(pbar, 0):
+        for i, data in enumerate(p_bar, 0):
             if configs._LOCAL_RANK == 0:
-                pbar.set_description(f'Epoch {epoch} batch {i}')
+                p_bar.set_description(f'Epoch {epoch} batch {i}')
 
             inputs, labels = data
 
@@ -103,7 +102,7 @@ def train():
             t = timer.timeit()
             print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
-                eval_total(model, testloader, timer, epoch)
+                eval_total(model, test_loader, timer, epoch)
 
     print(f'Training Finished! ({timer.timeit()[1]})')
 

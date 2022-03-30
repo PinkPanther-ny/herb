@@ -1,15 +1,16 @@
 import torch
-from torch.nn.parallel import DistributedDataParallel as DDP
 import torchvision.models as torch_model
+from torch.nn.parallel import DistributedDataParallel
 
-from ..settings import configs
-from ..utils import find_best_n_model
 from ..models import aresnet
 from ..models import cifar10_resnet
+from ..settings import configs
+from ..utils import find_best_n_model
+
 
 class ModelSelector:
     aresnet_param = (aresnet.Net, [])
-    
+
     torch_resnet18_param = (torch_model.resnet18, [])
     torch_resnet34_param = (torch_model.resnet34, [])
     torch_resnet50_param = (torch_model.resnet50, [])
@@ -17,7 +18,7 @@ class ModelSelector:
     torch_resnet152_param = (torch_model.resnet152, [])
     torch_wide_resnet50_param = (torch_model.wide_resnet50_2, [])
     torch_wide_resnet101_param = (torch_model.wide_resnet101_2, [])
-    
+
     c_resnet18_param = (cifar10_resnet.resnet18, [])
     c_resnet34_param = (cifar10_resnet.resnet34, [])
     c_resnet50_param = (cifar10_resnet.resnet50, [])
@@ -28,7 +29,7 @@ class ModelSelector:
 
     basic_net = {
         "aResnet": aresnet_param,
-        
+
         "resnet18": torch_resnet18_param,
         "resnet34": torch_resnet34_param,
         "resnet50": torch_resnet50_param,
@@ -36,7 +37,7 @@ class ModelSelector:
         "resnet152": torch_resnet152_param,
         "wide_resnet50": torch_wide_resnet50_param,
         "wide_resnet101": torch_wide_resnet101_param,
-        
+
         "c_resnet18": c_resnet18_param,
         "c_resnet34": c_resnet34_param,
         "c_resnet50": c_resnet50_param,
@@ -44,16 +45,16 @@ class ModelSelector:
         "c_resnet152": c_resnet152_param,
         "c_wide_resnet50": c_wide_resnet50_param,
         "c_wide_resnet101": c_wide_resnet101_param,
-        
+
     }
-    
+
     def __init__(self, cfg) -> None:
         self.net_name = getattr(cfg, "MODEL")
         self.LOCAL_RANK = getattr(cfg, "_LOCAL_RANK")
         pass
 
     def get_model(self):
-        
+
         net_info = self.basic_net[self.net_name]
         model = net_info[0](*net_info[1], num_classes=configs._NUM_CLASSES)
         if self.LOCAL_RANK == 0:
@@ -76,12 +77,11 @@ class ModelSelector:
                 if configs._LOCAL_RANK == 0:
                     print(f"IsADirectoryError! Fall back to untrained model.\n")
                 configs._LOAD_SUCCESS = False
-                
+
         # Move loaded model with parameters to gpus
         # Then warp with DDP, reducer will be constructed too.
         model.to(configs._DEVICE)
         if configs.DDP_ON:
-            model = DDP(model, device_ids=[configs._LOCAL_RANK], output_device=configs._LOCAL_RANK)
-        
+            model = DistributedDataParallel(model, device_ids=[configs._LOCAL_RANK], output_device=configs._LOCAL_RANK)
+
         return model
-        

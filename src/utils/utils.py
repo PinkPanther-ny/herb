@@ -43,8 +43,8 @@ def eval_total(model, test_loader, timer, epoch=-1):
     # gradients for our outputs
     with torch.no_grad():
         i = 0
-        pbar = tqdm(test_loader, desc="Evaluating model")
-        for data in pbar:
+        p_bar = tqdm(test_loader, desc="Evaluating model")
+        for data in p_bar:
             images, labels = data
             # calculate outputs by running images through the network
             outputs = model(images.to(configs._DEVICE))
@@ -53,7 +53,7 @@ def eval_total(model, test_loader, timer, epoch=-1):
             total += labels.size(0)
             correct += int(predicted == labels).sum().item()
             i += 1
-            pbar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
+            p_bar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
 
     print(
         f"{'' if epoch == -1 else 'Epoch ' + str(epoch) + ': '}"

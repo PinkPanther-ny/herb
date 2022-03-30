@@ -1,2 +1,1 @@
 from .configs import configs
-

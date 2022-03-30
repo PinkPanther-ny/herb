@@ -1,30 +1,32 @@
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn.functional as func
+
 
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
 
         def make_sequence(in_channels, increase_channels=False):
-
-            middle_channels = in_channels*2 if increase_channels else in_channels
+            middle_channels = in_channels * 2 if increase_channels else in_channels
             first_stride = 2 if increase_channels else 1
             return nn.Sequential(
-                nn.Conv2d(in_channels=in_channels, out_channels=middle_channels, dilation=1, kernel_size=3, padding=1, stride=first_stride),
+                nn.Conv2d(in_channels=in_channels, out_channels=middle_channels, dilation=1, kernel_size=3, padding=1,
+                          stride=first_stride),
                 nn.BatchNorm2d(num_features=middle_channels, eps=0.000001, momentum=0.9),
                 nn.ReLU(),
-                nn.Conv2d(in_channels=middle_channels, out_channels=middle_channels, dilation=1, kernel_size=3, padding=1, stride=1),
+                nn.Conv2d(in_channels=middle_channels, out_channels=middle_channels, dilation=1, kernel_size=3,
+                          padding=1, stride=1),
                 nn.BatchNorm2d(num_features=middle_channels, eps=0.000001, momentum=0.9),
-                )
+            )
 
         def make_sequence_left(in_channels):
-
             return nn.Sequential(
-                nn.Conv2d(in_channels=in_channels, out_channels=in_channels*2, dilation=1, kernel_size=1, padding=0, stride=2),
-                nn.BatchNorm2d(num_features=in_channels*2, eps=0.000001, momentum=0.9),
-                )
+                nn.Conv2d(in_channels=in_channels, out_channels=in_channels * 2, dilation=1, kernel_size=1, padding=0,
+                          stride=2),
+                nn.BatchNorm2d(num_features=in_channels * 2, eps=0.000001, momentum=0.9),
+            )
 
-        self.activation_func = F.leaky_relu
+        self.activation_func = func.leaky_relu
 
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1, stride=1)
         self.bn1 = nn.BatchNorm2d(num_features=64, eps=0.000001, momentum=0.9)
@@ -54,7 +56,6 @@ class Net(nn.Module):
         )
 
     def forward(self, x):
-
         # Before the first block
         x = self.activation_func(self.bn1(self.conv1(x)))
         # x = self.pool(x)

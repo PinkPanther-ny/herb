@@ -1,12 +1,11 @@
-import torch
-import torchvision.transforms as transforms
-from torchvision.datasets import ImageFolder
-from tqdm import tqdm
 import csv
 
+import torch
+from tqdm import tqdm
+
 from src.models import ModelSelector
-from src.settings import configs
 from src.preprocess import Preprocessor
+from src.settings import configs
 
 print("\n==================== Start generating submission ====================\n")
 # Generate submission
@@ -14,13 +13,13 @@ header = ['Id', 'Predicted']
 
 # Initialize model
 model = ModelSelector(configs).get_model()
-testloader = Preprocessor().get_submission_test_loader()
+test_loader = Preprocessor().get_submission_test_loader()
 print("\n==================== Dataset loaded successfully ====================\n")
-print(testloader.dataset)
+print(test_loader.dataset)
 print("\n==================== =========================== ====================\n")
 
 # Get all filenames
-all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in testloader.dataset.imgs]
+all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in test_loader.dataset.imgs]
 all_labels = []
 
 if configs._LOAD_SUCCESS:
@@ -28,7 +27,7 @@ if configs._LOAD_SUCCESS:
     # No need to calculate gradients
     with torch.no_grad():
         i=0
-        for data in tqdm(iterable=testloader, desc='Evaluating submission test set'):
+        for data in tqdm(iterable=test_loader, desc='Evaluating submission test set'):
             i += 1
             images, labels = data
             # calculate outputs by running images through the network
