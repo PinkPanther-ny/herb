@@ -54,7 +54,7 @@ def train():
 
     # ========================== Train =============================
     for epoch in range(configs.TOTAL_EPOCHS):
-        t = timer.timeit()
+        timer.timeit()
         # Just for removing bad models
         remove_bad_models()
         if configs.DDP_ON:
