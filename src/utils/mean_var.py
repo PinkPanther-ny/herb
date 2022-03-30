@@ -4,8 +4,17 @@ import torchvision.transforms as transforms
 from tqdm import tqdm
 
 
-def batch_mean_and_sd(loader):
-    
+# Transform for input images
+transform = transforms.Compose([
+    transforms.Resize(240),
+    transforms.CenterCrop((224, 224)),
+    transforms.ToTensor(),
+    ])
+
+def batch_mean_and_sd(loader=Preprocessor(trans_train=transform).get_loader()[0]):
+    """
+    Calculate mean and standard deviation of dataloader.
+    """
     cnt = 0
     fst_moment = torch.empty(3)
     snd_moment = torch.empty(3)
@@ -24,18 +33,6 @@ def batch_mean_and_sd(loader):
         cur_sd = [round(i, 4) for i in torch.sqrt(snd_moment - fst_moment ** 2).tolist()]
         pbar.set_postfix({'mean': cur_mean, 'sd': cur_sd})
 
-    mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)        
+    mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
+    print("mean and std: \n", mean, std)
     return mean,std
-
-# Transform for input images
-transform = transforms.Compose([
-    transforms.Resize(240),
-    transforms.CenterCrop((224, 224)),
-    transforms.ToTensor(),
-    ])
-
-
-trainloader, testloader = Preprocessor(trans_train=None).get_loader()
-
-mean, std = batch_mean_and_sd(trainloader)
-print("mean and std: \n", mean, std)
