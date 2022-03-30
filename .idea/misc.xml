@@ -25,7 +25,11 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/run.sh" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="5110" />
+          <option name="caretOffset" value="217" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/config.json" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="4263" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/src/settings/configs.py" />
         </OpenedFileInfo>
       </list>
