@@ -26,7 +26,7 @@ if configs._LOAD_SUCCESS:
     model.eval()
     # No need to calculate gradients
     with torch.no_grad():
-        i=0
+        i = 0
         for data in tqdm(iterable=test_loader, desc='Evaluating submission test set'):
             i += 1
             images, labels = data
@@ -37,20 +37,18 @@ if configs._LOAD_SUCCESS:
             all_labels = all_labels + predicted.tolist()
 else:
     print("Fatal! Load model failed!")
-    
+
 if len(all_ids) == len(all_labels):
     print(f"Total {len(all_labels)} answers\n")
-    
+
     with open(configs.SUBMISSION_FN, 'w', encoding='UTF8') as f:
         writer = csv.writer(f)
 
         # write the header
         writer.writerow(header)
-        
+
         for i in tqdm(range(len(all_labels)), "Writing answers"):
             # write the data
             writer.writerow([all_ids[i], all_labels[i]])
 else:
     print("Fatal! Length not equal!")
-            
-    
