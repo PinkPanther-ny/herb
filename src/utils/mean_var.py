@@ -3,13 +3,13 @@ from ..preprocess import Preprocessor
 import torchvision.transforms as transforms
 from tqdm import tqdm
 
-
 # Transform for input images
 transform = transforms.Compose([
     transforms.Resize(240),
     transforms.CenterCrop((224, 224)),
     transforms.ToTensor(),
-    ])
+])
+
 
 def batch_mean_and_sd(loader=Preprocessor(trans_train=transform).get_loader()[0]):
     """
@@ -28,11 +28,11 @@ def batch_mean_and_sd(loader=Preprocessor(trans_train=transform).get_loader()[0]
         fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
         snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
         cnt += nb_pixels
-        
+
         cur_mean = [round(i, 4) for i in fst_moment.tolist()]
         cur_sd = [round(i, 4) for i in torch.sqrt(snd_moment - fst_moment ** 2).tolist()]
         pbar.set_postfix({'mean': cur_mean, 'sd': cur_sd})
 
     mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
     print("mean and std: \n", mean, std)
-    return mean,std
+    return mean, std

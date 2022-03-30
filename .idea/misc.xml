@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="Python 3.9 (base)" project-jdk-type="Python SDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="UnattendedHostPersistenceState">
+    <option name="openedFilesInfos">
+      <list>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="360" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/utils/utils.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="4121" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/main.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="28" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/loss/__init__.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="160" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/loss/load_loss.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="38" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/models/__init__.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="52" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/models/aresnet.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="0" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/models/cifar10_resnet.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="274" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/models/load_model.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="34" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/optim/__init__.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="0" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/src/optim/load_opt.py" />
+        </OpenedFileInfo>
+      </list>
+    </option>
+  </component>
+</project>
