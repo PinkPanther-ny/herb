@@ -6,6 +6,7 @@
     <envs>
       <env name="PYTHONUNBUFFERED" value="1 " />
       <env name="OMP_NUM_THREADS" value="2" />
+      <env name="CUDA_VISIBLE_DEVICES" value="0,1,2,3" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/../../software/anaconda3/bin/python" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
