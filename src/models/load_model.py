@@ -75,7 +75,7 @@ class ModelSelector:
                 configs._LOAD_SUCCESS = False
             except IsADirectoryError:
                 if configs._LOCAL_RANK == 0:
-                    print(f"IsADirectoryError! Fall back to untrained model.\n")
+                    print(f"{configs._MODEL_DIR} is empty! Fall back to untrained model.\n")
                 configs._LOAD_SUCCESS = False
 
         # Move loaded model with parameters to gpus
