@@ -167,8 +167,8 @@ def gen_submission(model, test_loader):
 
 
 def visualize_loader(loader, n=9, rand=False, classes=None, show_classes=False, size_mul=1.0) -> None:
-    if classes is not None:
-        configs._CLASSES = classes
+    if classes is None:
+        classes = range(len(next(os.walk(configs._DATA_DIR, topdown=True))[1]))
 
     wid = int(math.floor(math.sqrt(n)))
     if wid * wid < n:
@@ -186,6 +186,6 @@ def visualize_loader(loader, n=9, rand=False, classes=None, show_classes=False, 
         plt.axis('off')
         if show_classes:
             print(index)
-            plt.title(configs._CLASSES[loader.dataset[index][1]])
+            plt.title(classes[loader.dataset[index][1]])
 
     fig.show()

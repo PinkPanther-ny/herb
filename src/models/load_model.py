@@ -1,3 +1,4 @@
+import os
 import torch
 import torchvision.models as torch_model
 from torch.nn.parallel import DistributedDataParallel
@@ -57,7 +58,7 @@ class ModelSelector:
     def get_model(self):
 
         net_info = self.basic_net[self.net_name]
-        model:nn.Module = net_info[0](*net_info[1], num_classes=configs._NUM_CLASSES)
+        model:nn.Module = net_info[0](*net_info[1], num_classes=len(next(os.walk(self._DATA_DIR, topdown=True))[1]))
         if self.LOCAL_RANK == 0:
             print(f"Model prototype [ {self.net_name} ] loaded!")
         # Load model to gpu

@@ -1,4 +1,5 @@
 import math
+import os
 import random
 from typing import Tuple
 
@@ -88,8 +89,8 @@ class Preprocessor:
         return self.test_loader
 
     def visualize_data(self, n=9, train=True, rand=True, classes=None, show_classes=False, size_mul=1.0) -> None:
-        if classes is not None:
-            configs._CLASSES = classes
+        if classes is None:
+            classes = range(len(next(os.walk(configs._DATA_DIR, topdown=True))[1]))
         loader = self.get_loader()[int(not train)]
         wid = int(math.floor(math.sqrt(n)))
         if wid * wid < n:
@@ -107,6 +108,6 @@ class Preprocessor:
             plt.axis('off')
             if show_classes:
                 print(index)
-                plt.title(configs._CLASSES[loader.dataset[index][1]])
+                plt.title(classes[loader.dataset[index][1]])
 
         fig.show()
