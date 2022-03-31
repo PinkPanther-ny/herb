@@ -1,8 +1,6 @@
 data/
 *.pth
-sample_submission.csv
-test_metadata.json
-train_metadata.json
+*.csv
 *.jpg
 *.json
 !default.json
