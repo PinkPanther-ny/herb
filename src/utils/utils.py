@@ -42,7 +42,7 @@ def eval_total(model, test_loader, timer, epoch=-1):
     # since we're not training, we don't need to calculate the
     # gradients for our outputs
     with torch.no_grad():
-        i = 0
+
         p_bar = tqdm(test_loader, desc="Evaluating model")
         for data in p_bar:
             images, labels = data
@@ -51,8 +51,8 @@ def eval_total(model, test_loader, timer, epoch=-1):
             # the class with the highest energy is what we choose as prediction
             _, predicted = torch.max(outputs.cpu().data, 1)
             total += labels.size(0)
-            correct += int(predicted == labels).sum().item()
-            i += 1
+            result:torch.Tensor = (predicted == labels)
+            correct += result.sum().item()
             p_bar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
 
     print(
