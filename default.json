@@ -22,8 +22,7 @@
     "TEST_N_DATA_POINTS": 60000,
     "LOAD_SPECIFIC_MODEL": true,
     "LOAD_BEST_MODEL": true,
-    "MODEL_NAME": "53_05.pth",
+    "MODEL_NAME": "",
     "GEN_SUBMISSION": false,
-    "SUBMISSION_FN": "submission.csv",
-    "NUM_CLASSES": 15505
+    "SUBMISSION_FN": "submission.csv"
 }

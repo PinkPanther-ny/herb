@@ -1,6 +1,7 @@
 import torch
 import torchvision.models as torch_model
 from torch.nn.parallel import DistributedDataParallel
+import torch.nn as nn
 
 from ..models import aresnet
 from ..models import cifar10_resnet
@@ -56,7 +57,7 @@ class ModelSelector:
     def get_model(self):
 
         net_info = self.basic_net[self.net_name]
-        model = net_info[0](*net_info[1], num_classes=configs.NUM_CLASSES)
+        model:nn.Module = net_info[0](*net_info[1], num_classes=configs._NUM_CLASSES)
         if self.LOCAL_RANK == 0:
             print(f"Model prototype [ {self.net_name} ] loaded!")
         # Load model to gpu

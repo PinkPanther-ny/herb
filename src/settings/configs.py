@@ -49,23 +49,23 @@ class Config:
         # LOAD_BEST_MODEL is prior to LOAD_SPECIFIC_MODEL
         self.LOAD_SPECIFIC_MODEL: bool = True
         self.LOAD_BEST_MODEL: bool = True
-        self.MODEL_NAME: str = "53_05.pth"
+        self.MODEL_NAME: str = ""
 
         # If true, a submission file will be generated before training
         self.GEN_SUBMISSION: bool = False
         self.SUBMISSION_FN: str = 'submission.csv'
-        self.NUM_CLASSES: int = 15505
 
         # ==============================================
         # PRIVATE VALUES
-
-        self._CLASSES = range(self.NUM_CLASSES)
+        # below attributes should all be derived on-the-fly
 
         cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
         self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
         self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
         self._SUBMISSION_DATA_DIR: str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
+        self._NUM_CLASSES: int = len(next(os.walk(self._DATA_DIR, topdown=True))[1])
+        self._CLASSES = range(self._NUM_CLASSES)
 
         self._DEVICE = None
         self._LOCAL_RANK = None
