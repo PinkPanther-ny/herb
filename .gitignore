@@ -5,6 +5,7 @@ test_metadata.json
 train_metadata.json
 *.jpg
 *.json
+!default.json
 train_images/
 test_images/
 
