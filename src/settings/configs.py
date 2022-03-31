@@ -4,9 +4,11 @@ import os
 
 import torch
 
+import argparse
+import sys
 
 class Config:
-    def __init__(self, *dict_config) -> None:
+    def __init__(self, fn=None) -> None:
         # ==============================================
         # GLOBAL SETTINGS
 
@@ -39,7 +41,7 @@ class Config:
         self.EPOCHS_PER_EVAL: int = 1
         # Train with {len(all data) - TEST_N_DATA_POINTS}
         # Test with {TEST_N_DATA_POINTS}
-        self.TEST_N_DATA_POINTS: int = 60000
+        self.TEST_ON_N_PERCENT_DATA: float = 0.1
 
         # ==============================================
         # MODEL LOADING SETTINGS
@@ -61,13 +63,7 @@ class Config:
 
         cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
-        self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
-        self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
-        self._SUBMISSION_DATA_DIR: str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
-
-        self._DEVICE = None
         self._LOCAL_RANK = None
-        self._LOAD_SUCCESS: bool = False
         try:
             if self.DDP_ON:
                 self._LOCAL_RANK = int(os.environ["LOCAL_RANK"])
@@ -77,15 +73,20 @@ class Config:
             self._LOCAL_RANK = 0
             self.DDP_ON = False
             print("Failed to use DDP!")
+           
+        if fn is not None:
+            self.load(fn) 
+            
+        self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
+        self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
+        self._SUBMISSION_DATA_DIR: str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
+
+        self._DEVICE = None
+        self._LOAD_SUCCESS: bool = False
 
         if self._LOCAL_RANK == 0 and not os.path.exists(self._MODEL_DIR):
             os.makedirs(self._MODEL_DIR)
         self._DEVICE = torch.device("cuda", self._LOCAL_RANK)
-
-        if len(dict_config) != 0:
-            d = eval(dict_config[0])
-            for k in dict(d):
-                setattr(self, k, d[k])
 
     def save(self, fn='config.json'):
         if self._LOCAL_RANK != 0:
@@ -132,4 +133,18 @@ class Config:
                 print(f"Config file {fn} failed to load! Use default value instead!")
 
 
-configs = Config()
+def get_options(args=None):
+    if args is None:
+        args = sys.argv[1:]
+    parser = argparse.ArgumentParser(description="Parse command for herbarium.")
+    parser.add_argument("-f", "--config", type=str, default=None, help="Configuration file location.")
+    parser.add_argument("-s", "--savecopy", type=bool, default=False,
+                        help="Save a copy of current default configuration.")
+    options = parser.parse_args(args)
+    return options
+
+
+options = get_options()
+if options.savecopy:
+    Config().save("default.json")
+configs = Config(options.config)

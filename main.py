@@ -36,6 +36,8 @@ def train():
     timer.timeit()
 
     if configs._LOCAL_RANK == 0:
+        print(f"[Train | Test] of batches [({int(os.environ['WORLD_SIZE'])}(gpus) * {len(train_loader)}) | ({len(test_loader)})] with batch size: {configs.BATCH_SIZE} loaded!")
+        print(f"Total {len(train_loader.dataset)+len(test_loader.dataset)} data points!")
         print(f"\n================== ================================= ==================\n")
         if configs._LOAD_SUCCESS:
             print(f"Verifying loaded model ({configs.MODEL_NAME.replace('/', '')})'s accuracy as its name suggested...")
@@ -111,11 +113,6 @@ if __name__ == '__main__':
     try:
         gc.collect()
         torch.cuda.empty_cache()
-        options = get_options()
-        if options.savecopy:
-            configs.save("default.json")
-        if options.config is not None:
-            configs.load(options.config)
         train()
     except KeyboardInterrupt:
         print("Exit!")

@@ -1,6 +1,6 @@
 {
     "MODEL_DIR_NAME": "/models_saved/",
-    "TRAINING_DATA_DIR": "/data/",
+    "TRAINING_DATA_DIR": "/mini_data/",
     "SUBMISSION_DATA_DIR": "/test_images/",
     "MODEL": "resnet50",
     "OPT": "Adam",
@@ -19,7 +19,7 @@
     "MIX_PRECISION": true,
     "TOTAL_EPOCHS": 300,
     "EPOCHS_PER_EVAL": 1,
-    "TEST_N_DATA_POINTS": 600,
+    "TEST_ON_N_PERCENT_DATA": 0.1,
     "LOAD_SPECIFIC_MODEL": true,
     "LOAD_BEST_MODEL": true,
     "MODEL_NAME": "",

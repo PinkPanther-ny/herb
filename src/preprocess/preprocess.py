@@ -53,8 +53,9 @@ class Preprocessor:
 
         # ImageFolder
         dataset = ImageFolder(root=data_dir, transform=self.trans_train)
+        test_n_points = int(len(dataset) * configs.TEST_ON_N_PERCENT_DATA)
         train_set, test_set = random_split(dataset,
-                                           [len(dataset) - configs.TEST_N_DATA_POINTS, configs.TEST_N_DATA_POINTS],
+                                           [len(dataset) - test_n_points, test_n_points],
                                            generator=torch.Generator().manual_seed(1)
                                            )
 

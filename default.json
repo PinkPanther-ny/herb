@@ -19,7 +19,7 @@
     "MIX_PRECISION": true,
     "TOTAL_EPOCHS": 300,
     "EPOCHS_PER_EVAL": 1,
-    "TEST_N_DATA_POINTS": 60000,
+    "TEST_ON_N_PERCENT_DATA": 0.1,
     "LOAD_SPECIFIC_MODEL": true,
     "LOAD_BEST_MODEL": true,
     "MODEL_NAME": "",
