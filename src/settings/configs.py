@@ -11,7 +11,7 @@ class Config:
         # GLOBAL SETTINGS
 
         # Directory right under the root of the project
-        self.MODEL_DIR_NAME: str = "/models_v100_new/"
+        self.MODEL_DIR_NAME: str = "/models_saved/"
         self.TRAINING_DATA_DIR: str = "/data/"
         self.SUBMISSION_DATA_DIR: str = "/test_images/"
 
@@ -53,13 +53,13 @@ class Config:
 
         # If true, a submission file will be generated before training
         self.GEN_SUBMISSION: bool = False
-        self.SUBMISSION_FN: str = 'submit50_new.csv'
+        self.SUBMISSION_FN: str = 'submission.csv'
+        self.NUM_CLASSES: int = 15505
 
         # ==============================================
         # PRIVATE VALUES
 
-        self._NUM_CLASSES: int = 15505
-        self._CLASSES = range(self._NUM_CLASSES)
+        self._CLASSES = range(self.NUM_CLASSES)
 
         cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])

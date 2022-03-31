@@ -56,7 +56,7 @@ class ModelSelector:
     def get_model(self):
 
         net_info = self.basic_net[self.net_name]
-        model = net_info[0](*net_info[1], num_classes=configs._NUM_CLASSES)
+        model = net_info[0](*net_info[1], num_classes=configs.NUM_CLASSES)
         if self.LOCAL_RANK == 0:
             print(f"Model prototype [ {self.net_name} ] loaded!")
         # Load model to gpu
