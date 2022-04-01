@@ -11,10 +11,12 @@ transform = transforms.Compose([
 ])
 
 
-def batch_mean_and_sd(loader=Preprocessor(trans_train=transform).get_loader()[0]):
+def batch_mean_and_sd(loader=None):
     """
     Calculate mean and standard deviation of dataloader.
     """
+    if loader is None:
+        loader = Preprocessor(trans_train=transform).get_loader()[0]
     cnt = 0
     fst_moment = torch.empty(3)
     snd_moment = torch.empty(3)
