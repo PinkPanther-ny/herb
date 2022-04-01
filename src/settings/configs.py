@@ -140,8 +140,8 @@ def get_options(args=None):
     parser.add_argument("-f", "--config", type=str, default=None, help="Configuration file location.")
     parser.add_argument("-s", "--savecopy", type=bool, default=False,
                         help="Save a copy of current default configuration.")
-    options = parser.parse_args(args)
-    return options
+    options = parser.parse_known_args(args)
+    return options[0]
 
 
 options = get_options()
