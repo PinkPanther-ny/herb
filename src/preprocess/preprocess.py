@@ -69,7 +69,7 @@ class Preprocessor:
 
         # Test with whole test set, no need for distributed sampler
         test_loader = DataLoader(test_set, batch_size=batch_size,
-                                 shuffle=True, num_workers=n_workers)
+                                 shuffle=False, num_workers=n_workers)
 
         # Return two iterables which contain data in blocks, block size equals to batch size
         return train_loader, test_loader
