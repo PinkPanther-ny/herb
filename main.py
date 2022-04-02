@@ -92,6 +92,9 @@ def train():
                 loss = criterion(outputs, labels.to(configs._DEVICE))
                 loss.backward()
                 optimizer.step()
+                
+            if configs._LOCAL_RANK == 0:
+                p_bar.set_postfix({'loss': f"{loss.item()}"})
 
         # Count epochs for learning rate scheduler
         scheduler.step()
