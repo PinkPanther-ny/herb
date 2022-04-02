@@ -7,11 +7,27 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from matplotlib import pyplot as plt
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, Dataset, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
 from torchvision.datasets import ImageFolder
-
+from torch.utils.data.dataset import Subset 
 from ..settings.configs import configs
+
+
+class DatasetFromSubset(Dataset):
+    # https://stackoverflow.com/questions/51782021/how-to-use-different-data-augmentation-for-subsets-in-pytorch
+    def __init__(self, subset:Subset, transform=None):
+        self.subset = subset
+        self.transform = transform
+
+    def __getitem__(self, index):
+        x, y = self.subset[index]
+        if self.transform:
+            x = self.transform(x)
+        return x, y
+
+    def __len__(self):
+        return len(self.subset)
 
 
 class Preprocessor:
@@ -52,13 +68,21 @@ class Preprocessor:
         n_workers = configs.NUM_WORKERS
 
         # ImageFolder
-        dataset = ImageFolder(root=data_dir, transform=self.trans_train)
+        dataset = ImageFolder(root=data_dir)
         test_n_points = int(len(dataset) * configs.TEST_ON_N_PERCENT_DATA)
-        train_set, test_set = random_split(dataset,
+        train_subset, test_subset = random_split(dataset,
                                            [len(dataset) - test_n_points, test_n_points],
                                            generator=torch.Generator().manual_seed(1)
                                            )
-
+        # Assign different transform for train/test dataset
+        train_set = DatasetFromSubset(
+            train_subset, transform=self.transform_train
+        )
+        
+        test_set = DatasetFromSubset(
+            test_subset, transform=self.transform_test
+        )
+        
         if configs.DDP_ON:
             train_sampler = DistributedSampler(train_set)
             train_loader = DataLoader(train_set, batch_size=batch_size,
