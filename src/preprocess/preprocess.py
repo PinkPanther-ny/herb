@@ -31,7 +31,7 @@ class DatasetFromSubset(Dataset):
 
 
 class Preprocessor:
-    transform_train = transforms.Compose([
+    _transform_train = transforms.Compose([
         transforms.Resize(240),
         transforms.CenterCrop((224, 224)),
         transforms.RandomHorizontalFlip(),
@@ -41,7 +41,7 @@ class Preprocessor:
         transforms.Normalize([0.8391, 0.8141, 0.7589], [0.1644, 0.1835, 0.2162])
     ])
 
-    transform_test = transforms.Compose([
+    _transform_test = transforms.Compose([
         transforms.Resize(240),
         transforms.CenterCrop((224, 224)),
         transforms.ToTensor(),
@@ -52,8 +52,8 @@ class Preprocessor:
                  trans_train=None,
                  trans_test=None) -> None:
 
-        self.trans_train = self.transform_train if trans_train is None else trans_train
-        self.trans_test = self.transform_test if trans_test is None else trans_test
+        self.trans_train = self._transform_train if trans_train is None else trans_train
+        self.trans_test = self._transform_test if trans_test is None else trans_test
 
         self.loader = None
         self.test_loader = None
@@ -76,11 +76,11 @@ class Preprocessor:
                                            )
         # Assign different transform for train/test dataset
         train_set = DatasetFromSubset(
-            train_subset, transform=self.transform_train
+            train_subset, transform=self.trans_train
         )
         
         test_set = DatasetFromSubset(
-            test_subset, transform=self.transform_test
+            test_subset, transform=self.trans_test
         )
         
         if configs.DDP_ON:
@@ -95,6 +95,7 @@ class Preprocessor:
         test_loader = DataLoader(test_set, batch_size=batch_size,
                                  shuffle=False, num_workers=n_workers)
 
+        self.loader = (train_loader, test_loader)
         # Return two iterables which contain data in blocks, block size equals to batch size
         return train_loader, test_loader
 
