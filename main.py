@@ -2,6 +2,7 @@ import gc
 
 import torch.distributed as dist
 from torch.optim.lr_scheduler import MultiStepLR
+from src.settings import configs
 
 from src.loss import LossSelector
 from src.models import ModelSelector
