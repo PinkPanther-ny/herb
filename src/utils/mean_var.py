@@ -4,17 +4,22 @@ import torchvision.transforms as transforms
 from tqdm import tqdm
 
 # Transform for input images
-transform = transforms.Compose([
+trans = transforms.Compose([
     transforms.Resize(240),
     transforms.CenterCrop((224, 224)),
     transforms.ToTensor(),
 ])
 
 
-def batch_mean_and_sd(loader=Preprocessor(trans_train=transform).get_loader()[0]):
+def batch_mean_and_sd(loader=None, transform=None):
     """
     Calculate mean and standard deviation of dataloader.
     """
+    if transform is None:
+        transform = trans
+    
+    if loader is None:
+        loader = Preprocessor(trans_train=transform).get_loader()[0]
     cnt = 0
     fst_moment = torch.empty(3)
     snd_moment = torch.empty(3)

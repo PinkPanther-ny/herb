@@ -6,7 +6,7 @@
     "OPT": "Adam",
     "SKD": "MultiStepLR",
     "LOSS": "CrossEntropy",
-    "BATCH_SIZE": 128,
+    "BATCH_SIZE": 512,
     "LEARNING_RATE": 0.01,
     "LEARNING_RATE_DECREASE_EPOCHS": [
         5,
