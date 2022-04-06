@@ -1,4 +1,5 @@
 import gc
+import torch.distributed as dist
 
 from torch.optim.lr_scheduler import MultiStepLR
 from src.settings import configs
@@ -97,7 +98,7 @@ def train():
                 optimizer.step()
                 
             if configs._LOCAL_RANK == 0:
-                p_bar.set_postfix({'loss': f"{loss.item()}"})
+                p_bar.set_postfix({'loss': f"{round(loss.item(), 4)}"})
 
         # Count epochs for learning rate scheduler
         scheduler.step()
