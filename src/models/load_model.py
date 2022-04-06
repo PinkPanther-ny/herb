@@ -50,24 +50,24 @@ class ModelSelector:
 
     }
 
-    def __init__(self, cfg) -> None:
-        self.net_name = getattr(cfg, "MODEL")
-        self.LOCAL_RANK = getattr(cfg, "_LOCAL_RANK")
+    def __init__(self) -> None:
         pass
 
     def get_model(self):
         
-        net_info = self.basic_net[self.net_name]
+        net_info = self.basic_net[configs.MODEL]
         model:nn.Module = net_info[0](*net_info[1], num_classes=len(next(os.walk(configs._DATA_DIR, topdown=True))[1]))
-        if self.LOCAL_RANK == 0:
-            print(f"Model prototype [ {self.net_name} ] loaded!")
+        if configs._LOCAL_RANK == 0:
+            print(f"Model prototype [ {configs.MODEL} ] loaded!")
         # Load model to gpu
         # Check if load specific model or load best model in model folder
         if configs.LOAD_SPECIFIC_MODEL:
             if configs.LOAD_BEST_MODEL:
                 configs.MODEL_NAME = find_best_n_model(configs._LOCAL_RANK)
             try:
-                model.load_state_dict(torch.load(configs._MODEL_DIR + configs.MODEL_NAME, map_location=configs._DEVICE))
+                checkpoint = torch.load(configs._MODEL_DIR + configs.MODEL_NAME, map_location=configs._DEVICE)
+                model.load_state_dict(checkpoint['net_state_dict'])
+                configs._CUR_EPOCHS = checkpoint['epoch'] + 1
                 configs._LOAD_SUCCESS = True
                 if configs._LOCAL_RANK == 0:
                     print(f"Model {configs.MODEL_NAME.replace('/', '')} loaded!")

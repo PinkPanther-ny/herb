@@ -24,6 +24,7 @@ class Config:
         # Select in optim/load_opt and loss/load_loss
         self.MODEL: str = "resnet50"
         self.OPT: str = "Adam"
+        self.SKD: str = "MultiStepLR"
         self.LOSS: str = "CrossEntropy"
 
         self.BATCH_SIZE: int = 512
@@ -62,6 +63,7 @@ class Config:
         # below attributes should all be derived on-the-fly
 
         cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+        self._CUR_EPOCHS: int = 1
         self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
         self._LOCAL_RANK = None
         try:

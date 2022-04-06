@@ -4,6 +4,7 @@
     "SUBMISSION_DATA_DIR": "/test_images/",
     "MODEL": "resnet50",
     "OPT": "Adam",
+    "SKD": "MultiStepLR",
     "LOSS": "CrossEntropy",
     "BATCH_SIZE": 128,
     "LEARNING_RATE": 0.01,

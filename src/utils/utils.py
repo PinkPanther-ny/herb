@@ -32,7 +32,7 @@ class Timer:
                    time.strftime("%H:%M:%S", time.gmtime(round(self.curr - self.ini, 2)))
 
 
-def eval_total(model, test_loader, timer, epoch=-1):
+def eval_total(model, test_loader, epoch=-1)->None:
     # Only necessary to evaluate model on one gpu
     if configs._LOCAL_RANK != 0:
         return
@@ -59,13 +59,26 @@ def eval_total(model, test_loader, timer, epoch=-1):
         f"{'' if epoch == -1 else 'Epoch ' + str(epoch) + ': '}"
         f"Accuracy of the network on the {total} test images: {100 * correct / float(total)} %")
     model.train()
+    return round(100 * correct / float(total), 4)
 
+def save_checkpoint(model, optimizer, scheduler, test_loader, epoch):
+    
     if configs.DDP_ON:
-        torch.save(model.module.state_dict(),
-                   configs._MODEL_DIR + f"{round(100 * correct / float(total), 4)}".replace('.', '_') + '.pth')
+        torch.save({
+            'epoch':epoch,
+            'net_state_dict': model.module.state_dict(),
+            'opt_state_dict': optimizer.state_dict(),
+            'skd_state_dict': scheduler.state_dict(),
+                    },
+                   configs._MODEL_DIR + f"{eval_total(model, test_loader, epoch)}".replace('.', '_') + '.pth')
     else:
-        torch.save(model.state_dict(),
-                   configs._MODEL_DIR + f"{round(100 * correct / float(total), 4)}".replace('.', '_') + '.pth')
+        torch.save({
+            'epoch':epoch,
+            'net_state_dict': model.module.state_dict(),
+            'opt_state_dict': optimizer.state_dict(),
+            'skd_state_dict': scheduler.state_dict(),
+                    },
+                   configs._MODEL_DIR + f"{eval_total(model, test_loader, epoch)}".replace('.', '_') + '.pth')
 
 
 def find_best_n_model(local_rank, n=5, rand=False):

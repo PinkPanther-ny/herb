@@ -1,11 +1,10 @@
 import gc
 
-import torch.distributed as dist
 from torch.optim.lr_scheduler import MultiStepLR
 
 from src.loss import LossSelector
 from src.models import ModelSelector
-from src.optim import OptSelector
+from src.optim import OptSelector, SkdSelector
 from src.preprocess import Preprocessor
 from src.utils import *
 
@@ -22,11 +21,10 @@ def train():
         dist.init_process_group(backend='nccl')
 
     # Define model, loss function and optimizer for the following training process
-    model = ModelSelector(configs).get_model()
-    criterion = LossSelector(loss_name=configs.LOSS, cfg=configs).get_loss()
-    optimizer = OptSelector(model.parameters(), opt_name=configs.OPT, cfg=configs).get_optim()
-    scheduler = MultiStepLR(optimizer, milestones=configs.LEARNING_RATE_DECREASE_EPOCHS,
-                            gamma=configs.LEARNING_RATE_GAMMA)
+    model = ModelSelector().get_model()
+    criterion = LossSelector().get_loss()
+    optimizer = OptSelector(model.parameters()).get_optim()
+    scheduler = SkdSelector(optimizer).get_skd()
 
     p = Preprocessor()
     train_loader, test_loader = p.get_loader()
@@ -41,7 +39,7 @@ def train():
         print(f"\n================== ================================= ==================\n")
         if configs._LOAD_SUCCESS:
             print(f"Verifying loaded model ({configs.MODEL_NAME.replace('/', '')})'s accuracy as its name suggested...")
-            eval_total(model, test_loader, timer)
+            eval_total(model, test_loader)
 
             if configs.GEN_SUBMISSION:
                 print(f"Generating submission file")
@@ -55,7 +53,7 @@ def train():
         scalar = torch.cuda.amp.GradScaler()
 
     # ========================== Train =============================
-    for epoch in range(configs.TOTAL_EPOCHS):
+    for epoch in range(configs._CUR_EPOCHS, configs.TOTAL_EPOCHS + 1):
         timer.timeit()
         # Just for removing bad models
         remove_bad_models()
@@ -64,6 +62,10 @@ def train():
             train_loader.sampler.set_epoch(epoch)
 
         if configs._LOCAL_RANK == 0:
+            print(optimizer.param_groups[0]['lr'], scheduler.get_last_lr())
+            if scheduler.get_last_lr() != scheduler.get_lr():
+                print(f"Learning rate updated from {scheduler.get_last_lr()} to {scheduler.get_lr()}")
+            
             p_bar = tqdm(train_loader)
         else:
             p_bar = train_loader
@@ -98,14 +100,11 @@ def train():
 
         # Evaluate model on main GPU after EPOCHS_PER_EVAL epochs
         if configs._LOCAL_RANK == 0:
-            if scheduler.get_last_lr() != scheduler.get_lr():
-                print(f"Learning rate updated from {scheduler.get_last_lr()} to {scheduler.get_lr()}")
             # Time current epoch training duration
             t = timer.timeit()
             print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
-                eval_total(model, test_loader, timer, epoch)
-
+                save_checkpoint(model, optimizer, scheduler, test_loader, epoch)
     print(f'Training Finished! ({timer.timeit()[1]})')
 
 

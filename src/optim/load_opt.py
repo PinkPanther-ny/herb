@@ -1,4 +1,8 @@
+import torch
 import torch.optim as optim
+
+from ..settings import configs
+from ..utils import find_best_n_model
 
 
 class OptSelector:
@@ -20,17 +24,20 @@ class OptSelector:
 
     }
 
-    def __init__(self, params, opt_name, cfg) -> None:
+    def __init__(self, params) -> None:
         self.params = params
-        self.opt_name = opt_name
-        self.LR = getattr(cfg, "LEARNING_RATE")
-        self.LOCAL_RANK = getattr(cfg, "_LOCAL_RANK")
         pass
 
     def get_optim(self):
-        opt_info = self.basic_opts[self.opt_name]
-        opt = opt_info[0](self.params, self.LR, *opt_info[1])
-        if self.LOCAL_RANK == 0:
-            print(f"Optimizer [ {self.opt_name} ] loaded!")
-
+        opt_info = self.basic_opts[configs.OPT]
+        opt = opt_info[0](self.params, configs.LEARNING_RATE, *opt_info[1])
+        if configs._LOCAL_RANK == 0:
+            print(f"Optimizer prototype [ {configs.OPT} ] loaded!")
+            
+        if configs.LOAD_SPECIFIC_MODEL and configs._LOAD_SUCCESS:
+            checkpoint = torch.load(configs._MODEL_DIR + configs.MODEL_NAME, map_location=configs._DEVICE)
+            opt.load_state_dict(checkpoint['opt_state_dict'])
+            if configs._LOCAL_RANK == 0:
+                print(f"Optimizer {configs.OPT} loaded from checkpoint {configs.MODEL_NAME.replace('/', '')}!")
+                
         return opt
