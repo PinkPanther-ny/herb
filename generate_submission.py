@@ -27,7 +27,7 @@ if configs._LOAD_SUCCESS:
     # No need to calculate gradients
     with torch.no_grad():
         i = 0
-        for data in tqdm(iterable=test_loader, desc='Evaluating submission test set'):
+        for data in tqdm(iterable=test_loader, desc='Evaluating submission test set', ncols=160, unit='batches'):
             i += 1
             images, labels = data
             # calculate outputs by running images through the network
@@ -47,7 +47,7 @@ if len(all_ids) == len(all_labels):
         # write the header
         writer.writerow(header)
 
-        for i in tqdm(range(len(all_labels)), "Writing answers"):
+        for i in tqdm(range(len(all_labels)), "Writing answers", ncols=160):
             # write the data
             writer.writerow([all_ids[i], all_labels[i]])
 else:

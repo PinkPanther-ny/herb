@@ -23,7 +23,7 @@ def batch_mean_and_sd(loader=None, transform=None):
     cnt = 0
     fst_moment = torch.empty(3)
     snd_moment = torch.empty(3)
-    pbar = tqdm(loader, desc="Calculating mean and sd")
+    pbar = tqdm(loader, desc="Calculating mean and sd", ncols=160, unit='batches')
     for images, _ in pbar:
         b, c, h, w = images.shape
         nb_pixels = b * h * w

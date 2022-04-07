@@ -62,19 +62,15 @@ def train():
         if configs.DDP_ON:
             # To avoid duplicated data sent to multi-gpu
             train_loader.sampler.set_epoch(epoch)
-
         if configs._LOCAL_RANK == 0:
-            print(optimizer.param_groups[0]['lr'], scheduler.get_last_lr())
-            if scheduler.get_last_lr() != scheduler.get_lr():
-                print(f"Learning rate updated from {scheduler.get_last_lr()} to {scheduler.get_lr()}")
-            
-            p_bar = tqdm(train_loader)
+
+            p_bar = tqdm(train_loader, ncols=160, colour='blue', unit='batches')
         else:
             p_bar = train_loader
 
         for i, data in enumerate(p_bar, 0):
             if configs._LOCAL_RANK == 0:
-                p_bar.set_description(f'Epoch {epoch} batch {i}')
+                p_bar.set_description(f'Epoch {epoch} batch {i+1}')
 
             inputs, labels = data
 
@@ -98,7 +94,7 @@ def train():
                 optimizer.step()
                 
             if configs._LOCAL_RANK == 0:
-                p_bar.set_postfix({'loss': f"{round(loss.item(), 4)}"})
+                p_bar.set_postfix({'loss': f"{round(loss.item(), 4)}", 'lr': optimizer.param_groups[0]['lr']})
 
         # Count epochs for learning rate scheduler
         scheduler.step()
@@ -107,9 +103,10 @@ def train():
         if configs._LOCAL_RANK == 0:
             # Time current epoch training duration
             t = timer.timeit()
-            print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
+            print(f"Epoch delta time: {t[0]}, Already: {t[1]}")
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
                 save_checkpoint(model, optimizer, scheduler, test_loader, epoch)
+            print("\n")
     print(f'Training Finished! ({timer.timeit()[1]})')
 
 

@@ -43,7 +43,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
     # gradients for our outputs
     with torch.no_grad():
 
-        p_bar = tqdm(test_loader, desc="Evaluating model")
+        p_bar = tqdm(test_loader, desc="Evaluating model", ncols=160, colour='green', unit='batches')
         for data in p_bar:
             images, labels = data
             # calculate outputs by running images through the network
@@ -152,7 +152,7 @@ def gen_submission(model, test_loader):
         # No need to calculate gradients
         with torch.no_grad():
             i = 0
-            for data in tqdm(iterable=test_loader, desc='Evaluating submission test set'):
+            for data in tqdm(iterable=test_loader, desc='Evaluating submission test set', ncols=160, unit='batches'):
                 i += 1
                 images, labels = data
                 # calculate outputs by running images through the network
@@ -172,7 +172,7 @@ def gen_submission(model, test_loader):
             # write the header
             writer.writerow(header)
 
-            for i in tqdm(range(len(all_labels)), "Writing answers"):
+            for i in tqdm(range(len(all_labels)), "Writing answers", ncols=160):
                 # write the data
                 writer.writerow([all_ids[i], all_labels[i]])
     else:
