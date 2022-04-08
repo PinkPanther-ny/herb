@@ -11,7 +11,7 @@ import torch
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from ..settings import configs
+from ..settings import configs, logger
 
 
 class Timer:
@@ -43,7 +43,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
     # gradients for our outputs
     with torch.no_grad():
 
-        p_bar = tqdm(test_loader, desc="Evaluating model ", ncols=160, colour='green', unit='batches')
+        p_bar = tqdm(test_loader, desc=f"{'Evaluating model':18s}", ncols=160, colour='green', unit='batches')
         for data in p_bar:
             images, labels = data
             # calculate outputs by running images through the network
@@ -55,7 +55,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
             correct += result.sum().item()
             p_bar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
 
-    print(
+    logger.info(
         f"{'' if epoch == -1 else 'Epoch ' + str(epoch) + ': '}"
         f"Accuracy of the network on the {total} test images: {100 * correct / float(total)} %")
     model.train()
@@ -63,6 +63,8 @@ def eval_total(model, test_loader, epoch=-1)->None:
 
 def save_checkpoint(model, optimizer, scheduler, test_loader, epoch):
     
+    acc = str(eval_total(model, test_loader, epoch))
+    model_name = acc.replace('.', '_') + '.pth'
     if configs.DDP_ON:
         torch.save({
             'epoch':epoch,
@@ -70,7 +72,7 @@ def save_checkpoint(model, optimizer, scheduler, test_loader, epoch):
             'opt_state_dict': optimizer.state_dict(),
             'skd_state_dict': scheduler.state_dict(),
                     },
-                   configs._MODEL_DIR + f"{eval_total(model, test_loader, epoch)}".replace('.', '_') + '.pth')
+                   configs._MODEL_DIR + model_name)
     else:
         torch.save({
             'epoch':epoch,
@@ -78,14 +80,21 @@ def save_checkpoint(model, optimizer, scheduler, test_loader, epoch):
             'opt_state_dict': optimizer.state_dict(),
             'skd_state_dict': scheduler.state_dict(),
                     },
-                   configs._MODEL_DIR + f"{eval_total(model, test_loader, epoch)}".replace('.', '_') + '.pth')
+                   configs._MODEL_DIR + model_name)
+    logger.info(f"Epoch {epoch}: Saved checkpoint to {model_name}")
 
 
 def find_best_n_model(local_rank, n=5, rand=False):
     files = next(os.walk(configs._MODEL_DIR), (None, None, []))[2]
     if len(files) == 0:
         return ''
-    acc = sorted([float(i.split('.')[0].replace('_', '.')) for i in files], reverse=True)
+    
+    models = []
+    for i in files:
+        if i.endswith('.pth'):
+            models.append(i)
+    
+    acc = sorted([float(i.split('.')[0].replace('_', '.')) for i in models], reverse=True)
     best_acc = acc[:n]
 
     for i in acc[n:]:
@@ -96,7 +105,7 @@ def find_best_n_model(local_rank, n=5, rand=False):
 
     model_name = str(best_acc[randrange(n) if (rand and len(acc[:n]) == n) else 0]).replace('.', '_') + ".pth"
     if local_rank == 0:
-        print(f"Loading one of the top {n} best model: {model_name}")
+        logger.info(f"Loading one of the top {n} best model: {model_name}")
     return "/" + model_name
 
 
@@ -104,7 +113,13 @@ def remove_bad_models(n=5):
     files = next(os.walk(configs._MODEL_DIR), (None, None, []))[2]
     if len(files) == 0:
         return
-    acc = sorted([float(i.split('.')[0].replace('_', '.')) for i in files], reverse=True)
+    
+    models = []
+    for i in files:
+        if i.endswith('.pth'):
+            models.append(i)
+    
+    acc = sorted([float(i.split('.')[0].replace('_', '.')) for i in models], reverse=True)
     for i in acc[n:]:
         try:
             os.remove(configs._MODEL_DIR + "/" + str(i).replace('.', '_') + ".pth")
@@ -132,16 +147,16 @@ def set_random_seeds(seed=0, deterministic=True):
 
 
 def gen_submission(model, test_loader):
-    print("\n==================== Start generating submission ====================\n")
+    logger.info("==================== Start generating submission ====================\n\n")
     # Generate submission
     header = ['Id', 'Predicted']
 
     # Initialize model
     # model = ModelSelector(configs).get_model()
     # testloader = Preprocessor().get_submission_test_loader()
-    print("\n==================== Dataset loaded successfully ====================\n")
-    print(test_loader.dataset)
-    print("\n==================== =========================== ====================\n")
+    logger.info("==================== Dataset loaded successfully ====================\n\n")
+    logger.info(test_loader.dataset)
+    logger.info("==================== =========================== ====================\n\n")
 
     # Get all filenames
     all_ids = [int(i[0].split('-')[-1].split('.')[0]) for i in test_loader.dataset.imgs]
@@ -161,10 +176,10 @@ def gen_submission(model, test_loader):
                 _, predicted = torch.max(outputs.data, 1)
                 all_labels = all_labels + predicted.tolist()
     else:
-        print("Fatal! Load model failed!")
+        logger.warning("Fatal! Load model failed!")
 
     if len(all_ids) == len(all_labels):
-        print(f"Total {len(all_labels)} answers\n")
+        logger.info(f"Total {len(all_labels)} answers\n")
 
         with open(configs.SUBMISSION_FN, 'w', encoding='UTF8') as f:
             writer = csv.writer(f)
@@ -176,7 +191,7 @@ def gen_submission(model, test_loader):
                 # write the data
                 writer.writerow([all_ids[i], all_labels[i]])
     else:
-        print("Fatal! Length not equal!")
+        logger.warning("Fatal! Length not equal!")
 
 
 def visualize_loader(loader, n=9, rand=False, classes=None, show_classes=False, size_mul=1.0) -> None:

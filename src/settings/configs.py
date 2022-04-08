@@ -6,6 +6,8 @@ import torch
 
 import argparse
 import sys
+from .logging import logger, LOGGING_CONFIG
+from logging.config import dictConfig
 
 class Config:
     def __init__(self, fn=None) -> None:
@@ -13,7 +15,6 @@ class Config:
         # GLOBAL SETTINGS
 
         # Directory right under the root of the project
-        self.MODEL_DIR_NAME: str = "/models_saved/"
         self.TRAINING_DATA_DIR: str = "/data/"
         self.SUBMISSION_DATA_DIR: str = "/test_images/"
 
@@ -65,6 +66,12 @@ class Config:
         cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self._CUR_EPOCHS: int = 1
         self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
+        self._MODEL_DIR_NAME: str = "/models_saved/"
+        self._MODEL_DIR: str = self._WORKING_DIR + self._MODEL_DIR_NAME + self.MODEL + '/'
+        
+        LOGGING_CONFIG['handlers']['file_handler']['filename'] = self._MODEL_DIR + self.MODEL + '.log'
+        dictConfig(LOGGING_CONFIG)
+        
         self._LOCAL_RANK = None
         try:
             if self.DDP_ON:
@@ -74,12 +81,11 @@ class Config:
         except KeyError:
             self._LOCAL_RANK = 0
             self.DDP_ON = False
-            print("Failed to use DDP!")
+            logger.warning("Failed to use DDP!")
            
         if fn is not None:
             self.load(fn) 
-            
-        self._MODEL_DIR: str = self._WORKING_DIR + self.MODEL_DIR_NAME
+        
         self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
         self._SUBMISSION_DATA_DIR: str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
 
@@ -105,7 +111,7 @@ class Config:
                 del dict_copy[i]
 
             json.dump(dict_copy, fp, indent=4)
-        print(f"Config file successfully saved to {fn}!")
+        logger.info(f"Config file successfully saved to {fn}!")
 
     def load(self, fn='config.json'):
 
@@ -117,22 +123,22 @@ class Config:
                         if not isinstance(dict_config[k], type(getattr(self, k))):
                             cur_type = type(getattr(self, k))
                             if self._LOCAL_RANK == 0:
-                                print("Warning! Config file contains unmatched value type, "
+                                logger.warning("Warning! Config file contains unmatched value type, "
                                       "could be a broken configuration")
-                                print(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) "
+                                logger.warning(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) "
                                       f"to {cur_type(dict_config[k])} ({cur_type})")
                             setattr(self, k, cur_type(dict_config[k]))
                         else:
                             setattr(self, k, dict_config[k])
                     except AttributeError:
                         if self._LOCAL_RANK == 0:
-                            print(f"Key [\"{k}\"] will be discarded since config class does not use this attribute.")
+                            logger.warning(f"Key [\"{k}\"] will be discarded since config class does not use this attribute.")
             if self._LOCAL_RANK == 0:
-                print(f"Config file {fn} loaded successfully!")
+                logger.info(f"Config file {fn} loaded successfully!")
 
         except:
             if self._LOCAL_RANK == 0:
-                print(f"Config file {fn} failed to load! Use default value instead!")
+                logger.warning(f"Config file {fn} failed to load! Use default value instead!")
 
 
 def get_options(args=None):

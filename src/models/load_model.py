@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from ..models import aresnet
 from ..models import cifar10_resnet
-from ..settings import configs
+from ..settings import configs, logger
 from ..utils import find_best_n_model
 
 
@@ -58,7 +58,7 @@ class ModelSelector:
         net_info = self.basic_net[configs.MODEL]
         model:nn.Module = net_info[0](*net_info[1], num_classes=len(next(os.walk(configs._DATA_DIR, topdown=True))[1]))
         if configs._LOCAL_RANK == 0:
-            print(f"Model prototype [ {configs.MODEL} ] loaded!")
+            logger.info(f"Model prototype [ {configs.MODEL} ] loaded!")
         # Load model to gpu
         # Check if load specific model or load best model in model folder
         if configs.LOAD_SPECIFIC_MODEL:
@@ -70,14 +70,14 @@ class ModelSelector:
                 configs._CUR_EPOCHS = checkpoint['epoch'] + 1
                 configs._LOAD_SUCCESS = True
                 if configs._LOCAL_RANK == 0:
-                    print(f"Model {configs.MODEL_NAME.replace('/', '')} loaded!")
+                    logger.info(f"Model {configs.MODEL_NAME.replace('/', '')} loaded!")
             except FileNotFoundError:
                 if configs._LOCAL_RANK == 0:
-                    print(f"[\"{configs.MODEL_NAME}\"] Model not found! Fall back to untrained model.\n")
+                    logger.warning(f"[\"{configs.MODEL_NAME}\"] Model not found! Fall back to untrained model.\n")
                 configs._LOAD_SUCCESS = False
             except IsADirectoryError:
                 if configs._LOCAL_RANK == 0:
-                    print(f"{configs._MODEL_DIR} is empty! Fall back to untrained model.\n")
+                    logger.warning(f"{configs._MODEL_DIR} is empty! Fall back to untrained model.\n")
                 configs._LOAD_SUCCESS = False
 
         # Move loaded model with parameters to gpus

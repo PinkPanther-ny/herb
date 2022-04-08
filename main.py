@@ -4,7 +4,7 @@ import gc
 import os
 from tqdm import tqdm
 
-from src.settings import configs
+from src.settings import configs, logger
 from src.loss import LossSelector
 from src.models import ModelSelector
 from src.optim import OptSelector, SkdSelector
@@ -17,7 +17,7 @@ from src.utils import set_random_seeds, Timer, eval_total, gen_submission, remov
 def train():
     set_random_seeds()
     if configs._LOCAL_RANK == 0:
-        print(f"\n==================  Loading required configurations  ==================\n")
+        logger.info(f"==================  Loading required configurations  ==================\n")
     # DDP backend initialization
     if configs.DDP_ON:
         torch.cuda.set_device(configs._LOCAL_RANK)
@@ -37,17 +37,19 @@ def train():
     timer.timeit()
 
     if configs._LOCAL_RANK == 0:
-        print(f"[Train | Test] of batches [({int(os.environ['WORLD_SIZE'])}(gpus) * {len(train_loader)}) | ({len(test_loader)})] with batch size: {configs.BATCH_SIZE} loaded!")
-        print(f"Total {len(train_loader.dataset)+len(test_loader.dataset)} data points!")
-        print(f"\n================== ================================= ==================\n")
+        logger.info(f"[Train | Test] of batches [({int(os.environ['WORLD_SIZE'])}(gpus) * {len(train_loader)}) | ({len(test_loader)})] with batch size: {configs.BATCH_SIZE} loaded!")
+        logger.info(f"Total {len(train_loader.dataset)+len(test_loader.dataset)} data points!\n")
+        logger.info(f"================== ================================= ==================\n")
         if configs._LOAD_SUCCESS:
-            print(f"Verifying loaded model ({configs.MODEL_NAME.replace('/', '')})'s accuracy as its name suggested...")
+            logger.info(f"Verifying loaded model ({configs.MODEL_NAME.replace('/', '')})'s accuracy as its name suggested...")
             eval_total(model, test_loader)
 
             if configs.GEN_SUBMISSION:
-                print(f"Generating submission file")
+                logger.info(f"Generating submission file")
                 gen_submission(model, p.get_submission_test_loader())
-        print(f"\n================== Start training! Total {configs.TOTAL_EPOCHS} epochs ==================\n")
+        else:
+            logger.info('No model loaded, skip verifying step\n')
+        logger.info(f"================== Start training! Total {configs.TOTAL_EPOCHS} epochs ==================\n")
 
     model.train()
     # Mixed precision for massive speed up
@@ -68,10 +70,11 @@ def train():
         # Disable tqdm bar if current rank is not 0
         p_bar = tqdm(train_loader, ncols=160, colour='blue', unit='batches', disable=configs._LOCAL_RANK!=0)
 
-        avg_epoch_loss = 0
+        epoch_loss = 0
         for i, data in enumerate(p_bar, 1):
             if configs._LOCAL_RANK == 0:
-                p_bar.set_description(f'Epoch {epoch} batch {i}')
+                desc = f'Epoch {epoch} batch {i}'
+                p_bar.set_description(f"{desc:18s}")
 
             inputs, labels = data
 
@@ -94,10 +97,9 @@ def train():
                 loss.backward()
                 optimizer.step()
             
-            avg_epoch_loss += loss.item()
+            epoch_loss += loss.item()
             if configs._LOCAL_RANK == 0:
-                p_bar.set_postfix({'loss': f"{round(avg_epoch_loss/i, 4)}", 'lr': optimizer.param_groups[0]['lr']})
-
+                p_bar.set_postfix({'loss': f"{round(epoch_loss/i, 4)}", 'lr': optimizer.param_groups[0]['lr']})
         # Count epochs for learning rate scheduler
         scheduler.step()
 
@@ -106,10 +108,12 @@ def train():
             # Time current epoch training duration
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
                 save_checkpoint(model, optimizer, scheduler, test_loader, epoch)
-            t = timer.timeit()
-            print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
-
-    print(f"Training Finished! ({timer.timeit()[1]})\n")
+        
+        logger.info(f"Epoch {epoch}: training_loss = {round(epoch_loss/len(train_loader), 4)}, learning_rate = {round(optimizer.param_groups[0]['lr'], 8)}")
+        t = timer.timeit()
+        logger.info(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
+    
+    logger.info(f"Training Finished! ({timer.timeit()[1]})\n")
 
 
 if __name__ == '__main__':
@@ -118,4 +122,5 @@ if __name__ == '__main__':
         torch.cuda.empty_cache()
         train()
     except KeyboardInterrupt:
-        print("Exit!")
+        logger.warning(f"Training stopped by KeyboardInterrupt!\n")
+        logger.info("Exit!")

@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 
-from ..settings import configs
-from ..utils import find_best_n_model
+from ..settings import configs, logger
 
 
 class LossSelector:
@@ -19,7 +18,7 @@ class LossSelector:
         loss_info = self.basic_loss[configs.LOSS]
         loss = loss_info[0](*loss_info[1])
         if configs._LOCAL_RANK == 0:
-            print(f"Loss function [ {configs.LOSS} ] loaded!")
+            logger.info(f"Loss function [ {configs.LOSS} ] loaded!")
             
     
         return loss
