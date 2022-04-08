@@ -4,7 +4,7 @@ MAIN_ENTRY="./main.py"
 export CUDA_VISIBLE_DEVICES="0,1,2,3"
 export OMP_NUM_THREADS=2
 
-CONFIG_FILE=${1:-"config.json"}
+CONFIG_FILE=${1:-"default.json"}
 USE_N_GPU=${2:-4}
 
 echo -e "\033[104;097m USING $USE_N_GPU GPUs TO TRAIN \033[0m"
