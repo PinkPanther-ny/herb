@@ -1,5 +1,4 @@
 {
-    "MODEL_DIR_NAME": "/models_saved/",
     "TRAINING_DATA_DIR": "/data/",
     "SUBMISSION_DATA_DIR": "/test_images/",
     "MODEL": "resnet50",
