@@ -43,7 +43,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
     # gradients for our outputs
     with torch.no_grad():
 
-        p_bar = tqdm(test_loader, desc="Evaluating model", ncols=160, colour='green', unit='batches')
+        p_bar = tqdm(test_loader, desc="Evaluating model ", ncols=160, colour='green', unit='batches')
         for data in p_bar:
             images, labels = data
             # calculate outputs by running images through the network

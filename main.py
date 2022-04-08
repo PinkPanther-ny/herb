@@ -1,14 +1,15 @@
-import gc
+import torch
 import torch.distributed as dist
+import gc
+import os
+from tqdm import tqdm
 
-from torch.optim.lr_scheduler import MultiStepLR
 from src.settings import configs
-
 from src.loss import LossSelector
 from src.models import ModelSelector
 from src.optim import OptSelector, SkdSelector
 from src.preprocess import Preprocessor
-from src.utils import *
+from src.utils import set_random_seeds, Timer, eval_total, gen_submission, remove_bad_models, save_checkpoint
 
 
 # OMP_NUM_THREADS=2 python -m torch.distributed.run --nproc_per_node 4 main.py
@@ -48,6 +49,7 @@ def train():
                 gen_submission(model, p.get_submission_test_loader())
         print(f"\n================== Start training! Total {configs.TOTAL_EPOCHS} epochs ==================\n")
 
+    model.train()
     # Mixed precision for massive speed up
     # https://zhuanlan.zhihu.com/p/165152789
     scalar = None
@@ -62,15 +64,14 @@ def train():
         if configs.DDP_ON:
             # To avoid duplicated data sent to multi-gpu
             train_loader.sampler.set_epoch(epoch)
-        if configs._LOCAL_RANK == 0:
 
-            p_bar = tqdm(train_loader, ncols=160, colour='blue', unit='batches')
-        else:
-            p_bar = train_loader
+        # Disable tqdm bar if current rank is not 0
+        p_bar = tqdm(train_loader, ncols=160, colour='blue', unit='batches', disable=configs._LOCAL_RANK!=0)
 
-        for i, data in enumerate(p_bar, 0):
+        avg_epoch_loss = 0
+        for i, data in enumerate(p_bar, 1):
             if configs._LOCAL_RANK == 0:
-                p_bar.set_description(f'Epoch {epoch} batch {i+1}')
+                p_bar.set_description(f'Epoch {epoch} batch {i}')
 
             inputs, labels = data
 
@@ -92,9 +93,10 @@ def train():
                 loss = criterion(outputs, labels.to(configs._DEVICE))
                 loss.backward()
                 optimizer.step()
-                
+            
+            avg_epoch_loss += loss.item()
             if configs._LOCAL_RANK == 0:
-                p_bar.set_postfix({'loss': f"{round(loss.item(), 4)}", 'lr': optimizer.param_groups[0]['lr']})
+                p_bar.set_postfix({'loss': f"{round(avg_epoch_loss/i, 4)}", 'lr': optimizer.param_groups[0]['lr']})
 
         # Count epochs for learning rate scheduler
         scheduler.step()
@@ -102,12 +104,12 @@ def train():
         # Evaluate model on main GPU after EPOCHS_PER_EVAL epochs
         if configs._LOCAL_RANK == 0:
             # Time current epoch training duration
-            t = timer.timeit()
-            print(f"Epoch delta time: {t[0]}, Already: {t[1]}")
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
                 save_checkpoint(model, optimizer, scheduler, test_loader, epoch)
-            print("\n")
-    print(f'Training Finished! ({timer.timeit()[1]})')
+            t = timer.timeit()
+            print(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
+
+    print(f"Training Finished! ({timer.timeit()[1]})\n")
 
 
 if __name__ == '__main__':
