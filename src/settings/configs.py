@@ -62,15 +62,6 @@ class Config:
         # ==============================================
         # PRIVATE VALUES
         # below attributes should all be derived on-the-fly
-
-        cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-        self._CUR_EPOCHS: int = 1
-        self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
-        self._MODEL_DIR_NAME: str = "/models_saved/"
-        self._MODEL_DIR: str = self._WORKING_DIR + self._MODEL_DIR_NAME + self.MODEL + '/'
-        
-        LOGGING_CONFIG['handlers']['file_handler']['filename'] = self._MODEL_DIR + self.MODEL + '.log'
-        dictConfig(LOGGING_CONFIG)
         
         self._LOCAL_RANK = None
         try:
@@ -82,24 +73,36 @@ class Config:
             self._LOCAL_RANK = 0
             self.DDP_ON = False
             logger.warning("Failed to use DDP!")
-           
+
+        cur_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
+        self._WORKING_DIR: str = os.path.join('/', *cur_dir.split("/")[:-2])
         if fn is not None:
-            self.load(fn) 
+            self.load(fn)
+            
+        self._CUR_EPOCHS: int = 1
+        self._MODEL_DIR_NAME: str = "/models_saved/"
+        self._MODEL_DIR: str = self._WORKING_DIR + self._MODEL_DIR_NAME + self.MODEL + '/'
+
+        if self._LOCAL_RANK == 0 and not os.path.exists(self._MODEL_DIR):
+            os.makedirs(self._MODEL_DIR)
+        
+        # Specify the handler filename and apply the config to logger
+        LOGGING_CONFIG['handlers']['file_handler']['filename'] = self._MODEL_DIR + self.MODEL + '.log'
+        dictConfig(LOGGING_CONFIG)
+           
         
         self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
         self._SUBMISSION_DATA_DIR: str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
 
         self._DEVICE = None
         self._LOAD_SUCCESS: bool = False
-
-        if self._LOCAL_RANK == 0 and not os.path.exists(self._MODEL_DIR):
-            os.makedirs(self._MODEL_DIR)
         self._DEVICE = torch.device("cuda", self._LOCAL_RANK)
 
-    def save(self, fn='config.json'):
+    def save(self):
         if self._LOCAL_RANK != 0:
             return
-        with open(self._WORKING_DIR + "/" + fn, 'w') as fp:
+        fn = self._MODEL_DIR + f'{configs.MODEL}' + '_config.json'
+        with open(fn, 'w') as fp:
             dict_copy = copy.deepcopy(self.__dict__)
 
             # Remove private properties witch should be derived on-the-fly
@@ -123,9 +126,9 @@ class Config:
                         if not isinstance(dict_config[k], type(getattr(self, k))):
                             cur_type = type(getattr(self, k))
                             if self._LOCAL_RANK == 0:
-                                logger.warning("Warning! Config file contains unmatched value type, "
+                                print("Warning! Config file contains unmatched value type, "
                                       "could be a broken configuration")
-                                logger.warning(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) "
+                                print(f"Key [\"{k}\"]: Casting {dict_config[k]} ({type(dict_config[k])}) "
                                       f"to {cur_type(dict_config[k])} ({cur_type})")
                             setattr(self, k, cur_type(dict_config[k]))
                         else:
@@ -134,25 +137,25 @@ class Config:
                         if self._LOCAL_RANK == 0:
                             logger.warning(f"Key [\"{k}\"] will be discarded since config class does not use this attribute.")
             if self._LOCAL_RANK == 0:
-                logger.info(f"Config file {fn} loaded successfully!")
+                print(f"Config file {fn} loaded successfully!")
 
-        except:
+        except Exception as e:
             if self._LOCAL_RANK == 0:
-                logger.warning(f"Config file {fn} failed to load! Use default value instead!")
-
+                print(f"Config file {fn} failed to load! Use default value instead!")
+                print(e)
 
 def get_options(args=None):
     if args is None:
         args = sys.argv[1:]
     parser = argparse.ArgumentParser(description="Parse command for herbarium.")
     parser.add_argument("-f", "--config", type=str, default=None, help="Configuration file location.")
-    parser.add_argument("-s", "--savecopy", type=bool, default=False,
-                        help="Save a copy of current default configuration.")
+
     options = parser.parse_known_args(args)
     return options[0]
 
 
 options = get_options()
-if options.savecopy:
-    Config().save("default.json")
 configs = Config(options.config)
+
+configs.save()
+ 

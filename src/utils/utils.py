@@ -86,14 +86,13 @@ def save_checkpoint(model, optimizer, scheduler, test_loader, epoch):
 
 def find_best_n_model(local_rank, n=5, rand=False):
     files = next(os.walk(configs._MODEL_DIR), (None, None, []))[2]
-    if len(files) == 0:
-        return ''
-    
     models = []
     for i in files:
         if i.endswith('.pth'):
             models.append(i)
     
+    if len(models) == 0:
+        return ''
     acc = sorted([float(i.split('.')[0].replace('_', '.')) for i in models], reverse=True)
     best_acc = acc[:n]
 
@@ -111,13 +110,13 @@ def find_best_n_model(local_rank, n=5, rand=False):
 
 def remove_bad_models(n=5):
     files = next(os.walk(configs._MODEL_DIR), (None, None, []))[2]
-    if len(files) == 0:
-        return
     
     models = []
     for i in files:
         if i.endswith('.pth'):
             models.append(i)
+    if len(models) == 0:
+        return
     
     acc = sorted([float(i.split('.')[0].replace('_', '.')) for i in models], reverse=True)
     for i in acc[n:]:

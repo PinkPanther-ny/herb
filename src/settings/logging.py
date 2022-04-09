@@ -43,7 +43,7 @@ LOGGING_CONFIG = {
             'level': 'INFO',
             'formatter': 'file_fmt',
             'class': 'logging.FileHandler',
-            'filename': 'test1.log',
+            'filename': '',
             'mode': 'a'
         },
     },
@@ -57,6 +57,6 @@ LOGGING_CONFIG = {
     } 
 }
 
-dictConfig(LOGGING_CONFIG)
-
+# Since the log filename is specified in Config dynamically corresponding to model type
+# Dict config will be initialized later in Config class
 logger = logging.getLogger()

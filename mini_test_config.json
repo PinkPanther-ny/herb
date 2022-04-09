@@ -1,11 +1,11 @@
 {
     "TRAINING_DATA_DIR": "/mini_data/",
     "SUBMISSION_DATA_DIR": "/test_images/",
-    "MODEL": "resnet50",
+    "MODEL": "wide_resnet50",
     "OPT": "Adam",
     "SKD": "MultiStepLR",
     "LOSS": "CrossEntropy",
-    "BATCH_SIZE": 128,
+    "BATCH_SIZE": 64,
     "LEARNING_RATE": 0.01,
     "LEARNING_RATE_DECREASE_EPOCHS": [
         5,

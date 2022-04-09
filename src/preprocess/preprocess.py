@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, random_split, Dataset, TensorDataset
 from torch.utils.data.distributed import DistributedSampler
 from torchvision.datasets import ImageFolder
 from torch.utils.data.dataset import Subset 
-from ..settings.configs import configs
+from ..settings import configs, logger
 
 
 class DatasetFromSubset(Dataset):
@@ -69,6 +69,7 @@ class Preprocessor:
 
         # ImageFolder
         dataset = ImageFolder(root=data_dir)
+        logger.info(f"Dataset contains {len(dataset.classes)} classes")
         test_n_points = int(len(dataset) * configs.TEST_ON_N_PERCENT_DATA)
         train_subset, test_subset = random_split(dataset,
                                            [len(dataset) - test_n_points, test_n_points],
