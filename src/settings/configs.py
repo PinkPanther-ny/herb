@@ -1,6 +1,7 @@
 import copy
 import json
 import os
+import time
 
 import torch
 
@@ -85,6 +86,7 @@ class Config:
 
         if self._LOCAL_RANK == 0 and not os.path.exists(self._MODEL_DIR):
             os.makedirs(self._MODEL_DIR)
+        time.sleep(0.5)
         
         # Specify the handler filename and apply the config to logger
         LOGGING_CONFIG['handlers']['file_handler']['filename'] = self._MODEL_DIR + self.MODEL + '.log'
