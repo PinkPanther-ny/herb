@@ -45,7 +45,7 @@ class Config:
         # Train with {len(all data) - TEST_N_DATA_POINTS}
         # Test with {TEST_N_DATA_POINTS}
         self.TEST_ON_N_PERCENT_DATA: float = 0.1
-
+        self.TENSOR_BOARD_ON: bool = False
         # ==============================================
         # MODEL LOADING SETTINGS
 

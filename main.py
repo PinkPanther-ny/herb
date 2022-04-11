@@ -11,10 +11,14 @@ from src.optim import OptSelector, SkdSelector
 from src.preprocess import Preprocessor
 from src.utils import set_random_seeds, Timer, eval_total, gen_submission, remove_bad_models, save_checkpoint
 
+import torch
+from torch.utils.tensorboard import SummaryWriter
 
 # OMP_NUM_THREADS=2 python -m torch.distributed.run --nproc_per_node 4 main.py
 
 def train():
+    if configs.TENSOR_BOARD_ON:
+        writer = SummaryWriter()
     set_random_seeds()
     if configs._LOCAL_RANK == 0:
         logger.info(f"==================  Loading required configurations  ==================\n")
@@ -107,9 +111,21 @@ def train():
         if configs._LOCAL_RANK == 0:
             # Time current epoch training duration
             if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
-                save_checkpoint(model, optimizer, scheduler, test_loader, epoch)
+                acc = eval_total(model, test_loader, epoch)
+                
+                if configs.TENSOR_BOARD_ON:
+                    writer.add_scalars("Accuracy|Loss",  {'accuracy': acc,
+                                                        'loss': epoch_loss/len(train_loader)}, epoch)
+                save_checkpoint(model, acc, optimizer, scheduler, epoch)
+                
         
-        logger.info(f"Epoch {epoch}: training_loss = {round(epoch_loss/len(train_loader), 4)}, learning_rate = {round(optimizer.param_groups[0]['lr'], 8)}")
+        train_loss = round(epoch_loss/len(train_loader), 4)
+        cur_lr = round(optimizer.param_groups[0]['lr'], 8)
+        
+        if configs._LOCAL_RANK == 0 and configs.TENSOR_BOARD_ON:
+            writer.add_scalar("LR/train", cur_lr, epoch)
+        
+        logger.info(f"Epoch {epoch}: training_loss = {train_loss}, learning_rate = {cur_lr}")
         t = timer.timeit()
         logger.info(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
     

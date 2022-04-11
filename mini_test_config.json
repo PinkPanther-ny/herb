@@ -1,7 +1,7 @@
 {
     "TRAINING_DATA_DIR": "/mini_data/",
     "SUBMISSION_DATA_DIR": "/test_images/",
-    "MODEL": "wide_resnet50",
+    "MODEL": "resnet18",
     "OPT": "Adam",
     "SKD": "MultiStepLR",
     "LOSS": "CrossEntropy",
@@ -20,6 +20,7 @@
     "TOTAL_EPOCHS": 300,
     "EPOCHS_PER_EVAL": 1,
     "TEST_ON_N_PERCENT_DATA": 0.1,
+    "TENSOR_BOARD_ON": false,
     "LOAD_SPECIFIC_MODEL": true,
     "LOAD_BEST_MODEL": true,
     "MODEL_NAME": "",

@@ -61,9 +61,9 @@ def eval_total(model, test_loader, epoch=-1)->None:
     model.train()
     return round(100 * correct / float(total), 4)
 
-def save_checkpoint(model, optimizer, scheduler, test_loader, epoch):
+def save_checkpoint(model, accuracy, optimizer, scheduler, epoch):
     
-    acc = str(eval_total(model, test_loader, epoch))
+    acc = str(accuracy)
     model_name = acc.replace('.', '_') + '.pth'
     if configs.DDP_ON:
         torch.save({
