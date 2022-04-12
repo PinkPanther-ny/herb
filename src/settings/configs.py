@@ -145,6 +145,9 @@ class Config:
             if self._LOCAL_RANK == 0:
                 print(f"Config file {fn} failed to load! Use default value instead!")
                 print(e)
+                
+    def __str__(self):
+       return f"{self.MODEL}, {self.OPT}, {self.SKD}, {self.LOSS}, bs={self.BATCH_SIZE}, lr=({self.LEARNING_RATE},{str(self.LEARNING_RATE_DECREASE_EPOCHS)})"
 
 def get_options(args=None):
     if args is None:
@@ -160,4 +163,4 @@ options = get_options()
 configs = Config(options.config)
 
 configs.save()
- 
+logger.info(f"Config: {configs}")

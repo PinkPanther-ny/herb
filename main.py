@@ -18,7 +18,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 def train():
     if configs.TENSOR_BOARD_ON:
-        writer = SummaryWriter()
+        writer = SummaryWriter(str(configs))
     set_random_seeds()
     if configs._LOCAL_RANK == 0:
         logger.info(f"==================  Loading required configurations  ==================\n")
@@ -115,7 +115,7 @@ def train():
                 
                 if configs.TENSOR_BOARD_ON:
                     writer.add_scalars("Accuracy|Loss",  {'accuracy': acc,
-                                                        'loss': epoch_loss/len(train_loader)}, epoch)
+                                                            'loss': epoch_loss/len(train_loader)}, epoch)
                 save_checkpoint(model, acc, optimizer, scheduler, epoch)
                 
         
@@ -123,7 +123,7 @@ def train():
         cur_lr = round(optimizer.param_groups[0]['lr'], 8)
         
         if configs._LOCAL_RANK == 0 and configs.TENSOR_BOARD_ON:
-            writer.add_scalar("LR/train", cur_lr, epoch)
+            writer.add_scalar("LR", cur_lr, epoch)
         
         logger.info(f"Epoch {epoch}: training_loss = {train_loss}, learning_rate = {cur_lr}")
         t = timer.timeit()
