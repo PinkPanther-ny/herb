@@ -7,28 +7,11 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from matplotlib import pyplot as plt
-from torch.utils.data import DataLoader, random_split, Dataset, TensorDataset
+from torch.utils.data import DataLoader, random_split
 from torch.utils.data.distributed import DistributedSampler
-from torchvision.datasets import ImageFolder
-from torch.utils.data.dataset import Subset 
 from ..settings import configs, logger
-
-
-class DatasetFromSubset(Dataset):
-    # https://stackoverflow.com/questions/51782021/how-to-use-different-data-augmentation-for-subsets-in-pytorch
-    def __init__(self, subset:Subset, transform=None):
-        self.subset = subset
-        self.transform = transform
-
-    def __getitem__(self, index):
-        x, y = self.subset[index]
-        if self.transform:
-            x = self.transform(x)
-        return x, y
-
-    def __len__(self):
-        return len(self.subset)
-
+from torchvision.datasets import ImageFolder
+from .dataset import HerbDataset, DatasetFromSubset
 
 class Preprocessor:
     _transform_train = transforms.Compose([
@@ -57,18 +40,21 @@ class Preprocessor:
 
         self.loader = None
         self.test_loader = None
+        
+        self.train_set = None
+        self.test_set = None
+        self.dataset = HerbDataset(root=configs._DATA_DIR)
 
     def get_loader(self) -> Tuple[DataLoader, DataLoader]:
 
         if self.loader is not None:
             return self.loader
 
-        data_dir = configs._DATA_DIR
         batch_size = configs.BATCH_SIZE
         n_workers = configs.NUM_WORKERS
 
         # ImageFolder
-        dataset = ImageFolder(root=data_dir)
+        dataset = self.dataset
         logger.info(f"Dataset contains {len(dataset.classes)} classes")
         test_n_points = int(len(dataset) * configs.TEST_ON_N_PERCENT_DATA)
         train_subset, test_subset = random_split(dataset,
@@ -83,6 +69,8 @@ class Preprocessor:
         test_set = DatasetFromSubset(
             test_subset, transform=self.trans_test
         )
+        self.train_set = train_set
+        self.test_set = test_set
         
         if configs.DDP_ON:
             train_sampler = DistributedSampler(train_set)
@@ -138,3 +126,4 @@ class Preprocessor:
                 plt.title(classes[loader.dataset[index][1]])
 
         fig.show()
+
