@@ -18,7 +18,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 def train():
     if configs.TENSOR_BOARD_ON:
-        writer = SummaryWriter(str(configs))
+        writer = SummaryWriter("./runs/" + str(configs))
     set_random_seeds()
     if configs._LOCAL_RANK == 0:
         logger.info(f"==================  Loading required configurations  ==================\n")
