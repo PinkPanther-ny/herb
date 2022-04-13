@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional
 from PIL import Image
 from torch.utils.data.dataset import Dataset, Subset
 
-# from ..settings import logger
+from ...settings import logger
 
 
 class HerbDatasetIniError(Exception):
@@ -38,6 +38,7 @@ def default_loader(path: str) -> Any:
 class HerbDataset(Dataset):
 
     regex_filename: str = '\d{5}__\d{3}.jpg'
+    
     def __init__(self,
                  root: str,
                  transform: Optional[Callable] = None,
@@ -45,7 +46,7 @@ class HerbDataset(Dataset):
                  ):
         if not os.path.isdir(root):
             msg = f"Fatal!{root} is not a directory!"
-            # logger.critical(msg)
+            logger.critical(msg)
             raise HerbDatasetIniError(msg)
         self.root = root
         classes, class_to_idx = self.find_classes(self.root)
@@ -68,7 +69,7 @@ class HerbDataset(Dataset):
                     # self.samples.append(os.path.join(root, file))
                 else:
                     msg = f"Dataset contains an invalid file {os.path.join(root, file)}!"
-                    # logger.critical(msg)
+                    logger.critical(msg)
                     raise HerbDatasetIniError(msg)
         classes = sorted(list(classes))
         class_to_idx = {cls_name: i for i, cls_name in enumerate(classes)}
@@ -90,7 +91,7 @@ class HerbDataset(Dataset):
                     path_label_pairs.append((os.path.join(root, file), class_to_idx[class_name]))
                 else:
                     msg = f"Dataset contains an invalid file {os.path.join(root, file)}!"
-                    # logger.critical(msg)
+                    logger.critical(msg)
                     raise HerbDatasetIniError(msg)
         
         return sorted(path_label_pairs)
