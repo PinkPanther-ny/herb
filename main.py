@@ -1,3 +1,4 @@
+import shutil
 import torch
 import torch.distributed as dist
 import gc
@@ -72,7 +73,7 @@ def train():
             train_loader.sampler.set_epoch(epoch)
 
         # Disable tqdm bar if current rank is not 0
-        p_bar = tqdm(train_loader, ncols=160, colour='blue', unit='batches', disable=configs._LOCAL_RANK!=0)
+        p_bar = tqdm(train_loader, ncols=160, colour='blue', unit='batches', disable=configs._LOCAL_RANK!=0, bar_format='{l_bar}{bar:60}{r_bar}{bar:-60b}')
 
         epoch_loss = 0
         for i, data in enumerate(p_bar, 1):
@@ -110,6 +111,9 @@ def train():
         # Evaluate model on all GPUs after EPOCHS_PER_EVAL epochs
         if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
             acc = eval_total(model, test_loader, epoch)
+            # Remove tmp_dir
+            if configs._LOCAL_RANK == 0 and os.path.exists(configs._EVAL_TMP_DIR):
+                shutil.rmtree(configs._EVAL_TMP_DIR)
             
         if configs._LOCAL_RANK == 0:
             if configs.TENSOR_BOARD_ON:

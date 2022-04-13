@@ -2,7 +2,7 @@ import copy
 import json
 import os
 import time
-
+import shutil
 import torch
 
 import argparse
@@ -98,7 +98,9 @@ class Config:
         
         self._DATA_DIR: str = self._WORKING_DIR + self.TRAINING_DATA_DIR
         self._SUBMISSION_DATA_DIR: str = self._WORKING_DIR + self.SUBMISSION_DATA_DIR
-
+        self._EVAL_TMP_DIR = self._WORKING_DIR + "/eval_tmp/"
+        if self._LOCAL_RANK == 0 and os.path.exists(self._EVAL_TMP_DIR):
+            shutil.rmtree(self._EVAL_TMP_DIR)
         self._DEVICE = None
         self._LOAD_SUCCESS: bool = False
         self._DEVICE = torch.device("cuda", self._LOCAL_RANK)

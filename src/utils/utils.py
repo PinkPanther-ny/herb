@@ -41,7 +41,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
     # gradients for our outputs
     with torch.no_grad():
 
-        p_bar = tqdm(test_loader, desc=f"{'Evaluating model':18s}", ncols=160, colour='green', unit='batches', disable=configs._LOCAL_RANK!=0)
+        p_bar = tqdm(test_loader, desc=f"{'Evaluating model':18s}", ncols=160, colour='green', unit='batches', disable=configs._LOCAL_RANK!=0, bar_format='{l_bar}{bar:60}{r_bar}{bar:-60b}')
         for data in p_bar:
             images, labels = data
             # calculate outputs by running images through the network
@@ -51,18 +51,16 @@ def eval_total(model, test_loader, epoch=-1)->None:
             total += labels.size(0)
             result:torch.Tensor = (predicted == labels)
             correct += result.sum().item()
-            p_bar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
 
     model.train()
 
     # Use tmp files to synchronize accuracy over whole test dataset
-    tmp_dir = f"{configs._WORKING_DIR}/eval_tmp/"
-    if configs._LOCAL_RANK == 0 and not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir)
+    if configs._LOCAL_RANK == 0 and not os.path.exists(configs._EVAL_TMP_DIR):
+        os.makedirs(configs._EVAL_TMP_DIR)
     time.sleep(0.5)
 
     # Use tmp files to record current accuracy over subset of test dataset
-    with open(tmp_dir + f'gpu{configs._LOCAL_RANK}.tmp', 'w') as f:
+    with open(configs._EVAL_TMP_DIR + f'gpu{configs._LOCAL_RANK}.tmp', 'w') as f:
         lines = [str(correct), str(total)]
         f.writelines('\n'.join(lines))
         
@@ -71,7 +69,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
         all_correct = 0
         all_total = 0
         time.sleep(1)
-        for root, _, files in os.walk(tmp_dir):
+        for root, _, files in os.walk(configs._EVAL_TMP_DIR):
             for file in files:
                 with open(os.path.join(root, file)) as f:
                     lines = f.readlines()
@@ -191,7 +189,7 @@ def gen_submission(model, test_loader):
         # No need to calculate gradients
         with torch.no_grad():
             i = 0
-            for data in tqdm(iterable=test_loader, desc='Evaluating submission test set', ncols=160, unit='batches'):
+            for data in tqdm(iterable=test_loader, desc='Evaluating submission test set', ncols=160, unit='batches', bar_format='{l_bar}{bar:60}{r_bar}{bar:-60b}'):
                 i += 1
                 images, labels = data
                 # calculate outputs by running images through the network
@@ -211,7 +209,7 @@ def gen_submission(model, test_loader):
             # write the header
             writer.writerow(header)
 
-            for i in tqdm(range(len(all_labels)), "Writing answers", ncols=160):
+            for i in tqdm(range(len(all_labels)), "Writing answers", ncols=160, bar_format='{l_bar}{bar:60}{r_bar}{bar:-60b}'):
                 # write the data
                 writer.writerow([all_ids[i], all_labels[i]])
     else:
