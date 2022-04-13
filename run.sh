@@ -12,5 +12,4 @@ echo -e "\033[104;097m USING $USE_N_GPU GPUs TO TRAIN \033[0m"
 echo -e "\033[104;097m LOADING \033[090;102m$CONFIG_FILE \033[0m \033[0m"
 
 # -f flag for specify configuration file location
-# -s flag for specify whether to save a copy of current default configuration
-python -m torch.distributed.run --nproc_per_node $USE_N_GPU $MAIN_ENTRY -s True -f "$CONFIG_FILE"
+python -m torch.distributed.run --nproc_per_node $USE_N_GPU $MAIN_ENTRY -f "$CONFIG_FILE"
