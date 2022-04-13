@@ -21,9 +21,10 @@
     "EPOCHS_PER_EVAL": 1,
     "TEST_ON_N_PERCENT_DATA": 0.1,
     "TENSOR_BOARD_ON": false,
-    "LOAD_SPECIFIC_MODEL": true,
+    "LOAD_SPECIFIC_MODEL": false,
     "LOAD_BEST_MODEL": true,
     "MODEL_NAME": "",
     "GEN_SUBMISSION": false,
-    "SUBMISSION_FN": "submission.csv"
+    "SUBMISSION_FN": "submission.csv",
+    "IMAGE_BACKEND": "accimage"
 }

@@ -3,6 +3,8 @@
 MAIN_ENTRY="./main.py"
 export CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7"
 export OMP_NUM_THREADS=2
+# Pandas
+export NUMEXPR_MAX_THREADS=8
 
 CONFIG_FILE=${1:-"default.json"}
 USE_N_GPU=${2:-4}

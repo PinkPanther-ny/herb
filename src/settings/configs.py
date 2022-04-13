@@ -59,6 +59,9 @@ class Config:
         # If true, a submission file will be generated before training
         self.GEN_SUBMISSION: bool = False
         self.SUBMISSION_FN: str = 'submission.csv'
+        
+        # Image laoder backend ['PIL', 'accimage']
+        self.IMAGE_BACKEND: str = 'accimage'
 
         # ==============================================
         # PRIVATE VALUES
