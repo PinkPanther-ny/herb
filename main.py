@@ -52,7 +52,7 @@ def train():
                 logger.info(f"Generating submission file")
                 gen_submission(model, p.get_submission_test_loader())
         else:
-            logger.info('No model loaded, skip verifying step\n')
+            logger.info('No trained model loaded, skip verifying step\n')
         logger.info(f"================== Start training! Total {configs.TOTAL_EPOCHS} epochs ==================\n")
 
     model.train()
