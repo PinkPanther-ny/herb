@@ -73,17 +73,19 @@ class Preprocessor:
         self.test_set = test_set
         
         if configs.DDP_ON:
+            # Use DDP sampler for both training and testing data loader
             train_sampler = DistributedSampler(train_set)
+            test_sampler = DistributedSampler(test_set)
             train_loader = DataLoader(train_set, batch_size=batch_size,
                                       sampler=train_sampler, num_workers=n_workers, pin_memory=False, drop_last=True)
+            test_loader = DataLoader(test_set, batch_size=batch_size,
+                                    sampler=test_sampler, num_workers=n_workers, pin_memory=False, drop_last=False)
         else:
             train_loader = DataLoader(train_set, batch_size=batch_size,
                                       shuffle=True, num_workers=n_workers, pin_memory=False, drop_last=True)
-
-        # Test with whole test set, no need for distributed sampler
-        test_loader = DataLoader(test_set, batch_size=batch_size,
-                                 shuffle=False, num_workers=n_workers)
-
+            test_loader = DataLoader(test_set, batch_size=batch_size,
+                                     shuffle=False, num_workers=n_workers)
+        
         self.loader = (train_loader, test_loader)
         # Return two iterables which contain data in blocks, block size equals to batch size
         return train_loader, test_loader

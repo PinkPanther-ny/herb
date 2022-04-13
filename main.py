@@ -107,16 +107,15 @@ def train():
         # Count epochs for learning rate scheduler
         scheduler.step()
 
-        # Evaluate model on main GPU after EPOCHS_PER_EVAL epochs
+        # Evaluate model on all GPUs after EPOCHS_PER_EVAL epochs
+        if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
+            acc = eval_total(model, test_loader, epoch)
+            
         if configs._LOCAL_RANK == 0:
-            # Time current epoch training duration
-            if epoch % configs.EPOCHS_PER_EVAL == configs.EPOCHS_PER_EVAL - 1:
-                acc = eval_total(model, test_loader, epoch)
-                
-                if configs.TENSOR_BOARD_ON:
-                    writer.add_scalars("Accuracy|Loss",  {'accuracy': acc,
-                                                            'loss': epoch_loss/len(train_loader)}, epoch)
-                save_checkpoint(model, acc, optimizer, scheduler, epoch)
+            if configs.TENSOR_BOARD_ON:
+                writer.add_scalars("Accuracy|Loss",  {'accuracy': acc,
+                                                        'loss': epoch_loss/len(train_loader)}, epoch)
+            save_checkpoint(model, acc, optimizer, scheduler, epoch)
                 
         
         train_loss = round(epoch_loss/len(train_loader), 4)
@@ -126,6 +125,8 @@ def train():
             writer.add_scalar("LR", cur_lr, epoch)
         
         logger.info(f"Epoch {epoch}: training_loss = {train_loss}, learning_rate = {cur_lr}")
+        
+        # Time current epoch training duration
         t = timer.timeit()
         logger.info(f"Epoch delta time: {t[0]}, Already: {t[1]}\n")
     

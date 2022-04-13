@@ -34,8 +34,6 @@ class Timer:
 
 def eval_total(model, test_loader, epoch=-1)->None:
     # Only necessary to evaluate model on one gpu
-    if configs._LOCAL_RANK != 0:
-        return
     model.eval()
     correct = 0
     total = 0
@@ -43,7 +41,7 @@ def eval_total(model, test_loader, epoch=-1)->None:
     # gradients for our outputs
     with torch.no_grad():
 
-        p_bar = tqdm(test_loader, desc=f"{'Evaluating model':18s}", ncols=160, colour='green', unit='batches')
+        p_bar = tqdm(test_loader, desc=f"{'Evaluating model':18s}", ncols=160, colour='green', unit='batches', disable=configs._LOCAL_RANK!=0)
         for data in p_bar:
             images, labels = data
             # calculate outputs by running images through the network
@@ -55,10 +53,37 @@ def eval_total(model, test_loader, epoch=-1)->None:
             correct += result.sum().item()
             p_bar.set_postfix({'accuracy': f"{round(100 * correct / float(total), 4)}%"})
 
-    logger.info(
-        f"{'' if epoch == -1 else 'Epoch ' + str(epoch) + ': '}"
-        f"Accuracy of the network on the {total} test images: {100 * correct / float(total)} %")
     model.train()
+
+    # Use tmp files to synchronize accuracy over whole test dataset
+    tmp_dir = f"{configs._WORKING_DIR}/eval_tmp/"
+    if configs._LOCAL_RANK == 0 and not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
+    time.sleep(0.5)
+
+    # Use tmp files to record current accuracy over subset of test dataset
+    with open(tmp_dir + f'gpu{configs._LOCAL_RANK}.tmp', 'w') as f:
+        lines = [str(correct), str(total)]
+        f.writelines('\n'.join(lines))
+        
+    # Find and sum up all correct value counts and total value counts
+    if configs._LOCAL_RANK == 0:
+        all_correct = 0
+        all_total = 0
+        time.sleep(1)
+        for root, _, files in os.walk(tmp_dir):
+            for file in files:
+                with open(os.path.join(root, file)) as f:
+                    lines = f.readlines()
+                    all_correct += int(lines[0])
+                    all_total += int(lines[1])
+            
+        correct = all_correct
+        total = all_total
+        logger.info(
+            f"{'' if epoch == -1 else 'Epoch ' + str(epoch) + ': '}"
+            f"Accuracy of the network on the {total} test images: {100 * correct / float(total)} %")
+    
     return round(100 * correct / float(total), 4)
 
 def save_checkpoint(model, accuracy, optimizer, scheduler, epoch):
